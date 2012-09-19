@@ -31,6 +31,64 @@ class ARDrone():
         # Check drone availability
         if not _check_telnet(self.ip):
             raise StandardError, "Cannot connect to AR.Drone2"
+        # Initialise the communication thread
+        self.com_thread = _CommandThread(self.ip)
+        self.com_thread.start()
+    def stop(self):
+        "Stop the AR.Drone"
+        self.land()
+        time.sleep(1)
+        self.com_thread.stop()
+    # Issuable command
+    def takeoff(self):
+        "Take Off"
+        return self.com_thread.command("AT*REF=#ID#," + bin2dec("00010001010101000000001000000000") + "\r")
+    def land(self):
+        "Land"
+        return self.com_thread.command("AT*REF=#ID#," + bin2dec("00010001010101000000000000000000") + "\r")
+    def emergency(self):
+        "Enter in emergency mode"
+        return self.com_thread.command("AT*REF=#ID#," + bin2dec("00010001010101000000000100000000") + "\r")
+        
+
+class _CommandThread(threading.Thread):
+    "Classe qui gere les commandes Parrot car on doit en envoyer souvent"
+    def __init__(self,ip):
+        "Create the Command Thread"
+        self.running = True
+        self.ip = ip
+        self.counter = 1
+        self.com = None
+        self.port = COMMAND_PORT
+        # Create the UDP Socket
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.connect((self.ip, self.port))
+        
+        threading.Thread.__init__(self)
+        
+    def run(self):
+        "Send commands every 30ms"
+        while self.running:
+            com = self.com
+            if com != None:
+                com = com.replace("#ID#",str(self.counter))
+                self.sock.send(self.com)
+                self.counter += 1
+            time.sleep(0.03)
+    
+    def stop(self):
+        "Stop the communication"
+        self.sock.close()
+        self.running = False
+        time.sleep(0.05)
+        return True
+    def command(self,command):
+        "Send a command to the AR.Drone"
+        self.com = command
+        return True
+        
+        
+        
         
         
         
@@ -40,16 +98,20 @@ class ARDrone():
 ### DEFINITIONS ###
 ###################
 
-def _check_telnet(self,IP):
+def _check_telnet(IP):
     "Check if we can connect to telnet"
-    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        socket.connect((IP, 23))
+        sock.connect((IP, 23))
     except:
         return False
     else:
         socket.close()
         return True
+
+def bin2dec(bin):
+    return int(bin,2)
+    
     
     
     
