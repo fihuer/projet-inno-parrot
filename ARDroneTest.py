@@ -44,6 +44,8 @@ def menu(drone):
     print "5 - Backward"
     print "6 - Left"
     print "7 - Right"
+    print "8 - Calibrate sensors"
+    print "a - Reset"
     print "9 - Quit"
     result = ""
     while result != "9":
@@ -56,6 +58,8 @@ def menu(drone):
         if result == "5": drone.backward()
         if result == "6": drone.left()
         if result == "7": drone.right()
+        if result == "8": drone.calibrate()
+        if result == "a": drone.reset()
     
         
     
@@ -73,7 +77,8 @@ if __name__ == "__main__":
 
     # Tests
     # takeoff_land(drone)
-    menu()
+    menu(drone)
+    drone.stop()
     
     
     print "Done !"

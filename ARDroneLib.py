@@ -44,13 +44,14 @@ class ARDrone():
     ## Take Off/Land/Emergency
     def takeoff(self):
         "Take Off"
-        return self.c("AT*REF=#ID#," + bin2dec("00010001010101000000001000000000") + "\r")
+        print "Taking off"
+        return self.c("AT*REF=#ID#," + str(bin2dec("00010001010101000000001000000000")) + "\r")
     def land(self):
         "Land"
-        return self.c("AT*REF=#ID#," + bin2dec("00010001010101000000000000000000") + "\r")
+        return self.c("AT*REF=#ID#," + str(bin2dec("00010001010101000000000000000000")) + "\r")
     def emergency(self):
         "Enter in emergency mode"
-        return self.c("AT*REF=#ID#," + bin2dec("00010001010101000000000100000000") + "\r")
+        return self.c("AT*REF=#ID#," + str(bin2dec("00010001010101000000000100000000")) + "\r")
     def reset(self):
         "Reset the state of the drone"
         # Issue an emergency command
@@ -124,7 +125,7 @@ class _CommandThread(threading.Thread):
             com = self.com
             if com != None:
                 com = com.replace("#ID#",str(self.counter))
-                self.sock.send(self.com)
+                self.sock.send(com)
                 self.counter += 1
             time.sleep(0.03)
     
@@ -136,6 +137,7 @@ class _CommandThread(threading.Thread):
         return True
     def command(self,command):
         "Send a command to the AR.Drone"
+        
         self.com = command
         return True
         
@@ -151,7 +153,7 @@ def _check_telnet(IP):
     except:
         return False
     else:
-        socket.close()
+        sock.close()
         return True
 
 def bin2dec(bin):
