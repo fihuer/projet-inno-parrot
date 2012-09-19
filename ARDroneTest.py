@@ -2,7 +2,7 @@
 # ARDrone Package
 prog_name = "AR.Drone Test"
 # version:
-version = 1
+version = 2
 # By Viq
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
@@ -10,7 +10,8 @@ version = 1
 ##############
 ### IMPORT ###
 ##############
-import os, time, ARDroneLib, sys
+import time, sys
+import ARDroneLib, ARDroneGUI
 
 ###############
 ### GLOBALS ###
@@ -25,6 +26,21 @@ import os, time, ARDroneLib, sys
 ### DEFINITIONS ###
 ###################
 
+def choose_sequence(drone):
+    "Choose a test program sequence"
+    print "Please choose a test program you want to run:"
+    print "1 - Take Off & Land"
+    print "2 - Command line test"
+    print "3 - GUI Command Test"
+    result = raw_input(">")
+    if result == "1":
+        takeoff_land(drone)
+    elif result == "2":
+        menu_list(drone)
+    elif result == "3":
+        print "-> Launching GUI ..."
+        Command_GUI(drone)
+
 def takeoff_land(drone):
     "Routine just to test takeoff_land"
     wait= raw_input("Press enter to take off...")
@@ -34,7 +50,8 @@ def takeoff_land(drone):
     time.sleep(1)
     drone.stop()
 
-def menu(drone):
+def menu_list(drone):
+    "List of function you can perform"
     print "Choose your command:"
     print "0 - Emergency"
     print "1 - Hover"
@@ -64,9 +81,25 @@ def menu(drone):
         if result == "s": drone.down()
         if result == "q": drone.rotate_left()
         if result == "d": drone.rotate_right()
-    
         
-    
+def Command_GUI(drone):
+    "Create a GUI to command the drone"
+    gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
+    gui.add_action("<Up>",drone.forward)
+    gui.add_action("<Down>",drone.backward)
+    gui.add_action("<Left>",drone.left)
+    gui.add_action("<Right>",drone.right)
+    gui.add_action("<z>",drone.up)
+    gui.add_action("<s>",drone.down)
+    gui.add_action("<q>",drone.rotate_left)
+    gui.add_action("<d>",drone.rotate_right)
+    gui.add_action("<a>",drone.takeoff)
+    gui.add_action("<space>",drone.land)
+    gui.add_action("<Return>",drone.emergency)
+    gui.add_action("<t>",drone.reset)
+    gui.add_action("<y>",drone.calibrate)
+    gui.start()
+
 
 ##################
 ###  __MAIN__  ###
@@ -84,8 +117,7 @@ if __name__ == "__main__":
         sys.exit()
 
     # Tests
-    # takeoff_land(drone)
-    menu(drone)
+    choose_sequence(drone)
     drone.stop()
     
     

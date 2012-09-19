@@ -36,9 +36,12 @@ ToDo:
 - Affichage graphique
 
 r2:
-- Liste des commandes a envoyer
-- Choix de la commande
+- Ajout d'une interface graphique
+- Choix du test au démarrage
+
  
 
 r1:
 - Test de TakeOff, Land
+- Liste des commandes a envoyer
+- Choix de la commande

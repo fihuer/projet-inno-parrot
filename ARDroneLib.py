@@ -93,10 +93,10 @@ class ARDrone():
     def down(self,speed=0.2):
         "Make the drone descend, speed is between 0 and 1"
         return self.navigate(up_down=-speed)
-    def rotate_left(self,speed=0.2):
+    def rotate_left(self,speed=0.8):
         "Make the drone turn left, speed is between 0 and 1"
         return self.navigate(angle_change=-speed)
-    def rotate_right(self,speed=0.2):
+    def rotate_right(self,speed=0.8):
         "Make the drone turn right, speed is between 0 and 1"
         return self.navigate(angle_change=speed)
     
