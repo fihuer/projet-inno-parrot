@@ -1,0 +1,44 @@
+###############
+# ARDroneLib: #
+###############
+
+ToDo:
+- Recupération des données de navigation
+
+- Configuration du Drone
+- Activation des tags
+- Recupération des données Tag
+
+- Récupération de la vidéo
+
+
+r2:
+- Nouvelles commandes:
+	Reset, Calibrate,
+	Navigate, Forward, Backward, Left, Right,
+	Up, Down, Rotate_left, Rotate_right
+
+
+r1:
+- Creation du thread de gestion des commandes
+- Nouvelles commandes: Take Off, Land, Emergency
+
+
+
+
+
+################
+# ARDroneTest: #
+################
+
+ToDo:
+- Affichage des données
+- Affichage graphique
+
+r2:
+- Liste des commandes a envoyer
+- Choix de la commande
+ 
+
+r1:
+- Test de TakeOff, Land

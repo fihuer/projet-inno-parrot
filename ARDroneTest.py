@@ -25,6 +25,41 @@ import os, time, ARDroneLib
 ### DEFINITIONS ###
 ###################
 
+def takeoff_land(drone):
+    "Routine just to test takeoff_land"
+    wait= raw_input("Press enter to take off...")
+    drone.takeoff()
+    wait= raw_input("Press enter to land..")
+    drone.land()
+    time.sleep(1)
+    drone.stop()
+
+def menu(drone):
+    print "Choose your command:"
+    print "0 - Emergency"
+    print "1 - Hover"
+    print "2 - Take Off"
+    print "3 - Land"
+    print "4 - Forward"
+    print "5 - Backward"
+    print "6 - Left"
+    print "7 - Right"
+    print "9 - Quit"
+    result = ""
+    while result != "9":
+        result = raw_input(">")
+        if result == "0": drone.emergency()
+        if result == "1": drone.hover()
+        if result == "2": drone.takeoff()
+        if result == "3": drone.land()
+        if result == "4": drone.forward()
+        if result == "5": drone.backward()
+        if result == "6": drone.left()
+        if result == "7": drone.right()
+    
+        
+    
+
 ##################
 ###  __MAIN__  ###
 ##################
@@ -35,11 +70,11 @@ if __name__ == "__main__":
     print "> Loading program ..."
     # Create the drone
     drone = ARDroneLib.ARDrone()
-    wait= raw_input("Press enter to take off...")
-    drone.takeoff()
-    wait= raw_input("Press enter to land..")
-    drone.land()
-    time.sleep(1)
-    drone.stop()
+
+    # Tests
+    # takeoff_land(drone)
+    menu()
+    
+    
     print "Done !"
     
