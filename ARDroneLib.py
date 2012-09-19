@@ -44,7 +44,6 @@ class ARDrone():
     ## Take Off/Land/Emergency
     def takeoff(self):
         "Take Off"
-        print "Taking off"
         return self.c("AT*REF=#ID#," + str(bin2dec("00010001010101000000001000000000")) + "\r")
     def land(self):
         "Land"

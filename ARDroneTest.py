@@ -10,7 +10,7 @@ version = 1
 ##############
 ### IMPORT ###
 ##############
-import os, time, ARDroneLib
+import os, time, ARDroneLib, sys
 
 ###############
 ### GLOBALS ###
@@ -60,6 +60,10 @@ def menu(drone):
         if result == "7": drone.right()
         if result == "8": drone.calibrate()
         if result == "a": drone.reset()
+        if result == "z": drone.up()
+        if result == "s": drone.down()
+        if result == "q": drone.rotate_left()
+        if result == "d": drone.rotate_right()
     
         
     
@@ -73,7 +77,11 @@ if __name__ == "__main__":
     print "> By Viq (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     # Create the drone
-    drone = ARDroneLib.ARDrone()
+    try:
+        drone = ARDroneLib.ARDrone()
+    except:
+        wait = raw_input("Cannot connect to drone !")
+        sys.exit()
 
     # Tests
     # takeoff_land(drone)
