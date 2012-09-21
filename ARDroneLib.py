@@ -109,10 +109,8 @@ class ARDrone():
     def rotate_right(self,speed=0.8):
         "Make the drone turn right, speed is between 0 and 1"
         return self.navigate(angle_change=speed)
-    
-        
-    
-        
+
+    ## Special 
 
 class _CommandThread(threading.Thread):
     "Classe qui gere les commandes Parrot car on doit en envoyer souvent"

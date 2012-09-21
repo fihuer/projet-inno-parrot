@@ -102,7 +102,7 @@ def Command_GUI(drone):
 
 def print_it(msg):
     "Pritn the msg"
-    #print msg["drone_state"]["too_much_angle"]
+    #print msg["drone_state"]["video_on"],
     pass
 
 ##################
@@ -114,10 +114,8 @@ if __name__ == "__main__":
     print "> By Viq (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     # Create the drone
-    drone = ARDroneLib.ARDrone(data_callback=print_it)
     try:
-        #drone = ARDroneLib.ARDrone()
-        pass
+        drone = ARDroneLib.ARDrone(data_callback=print_it)
     except StandardError:
         wait = raw_input("Cannot connect to drone !")
         sys.exit()
