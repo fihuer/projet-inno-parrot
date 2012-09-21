@@ -1,3 +1,29 @@
+# -*- coding:Utf-8 -*-
+# ARDrone Package
+prog_name = "AR.Drone NavData"
+# version:
+version = 1
+# By Viq
+# License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
+# (http://creativecommons.org/licenses/by-sa/3.0/)
+
+##############
+### IMPORT ###
+##############
+
+###############
+### GLOBALS ###
+###############
+
+###############
+### CLASSES ###
+###############
+
+
+###################
+### DEFINITIONS ###
+###################
+
 def navdata_decode(packet):
     """Split then decodes the navdata packet gathered from UDP 5554"""
     import struct
@@ -73,3 +99,7 @@ def navdata_decode(packet):
      return navdata
     
     
+
+##################
+###  __MAIN__  ###
+##################
