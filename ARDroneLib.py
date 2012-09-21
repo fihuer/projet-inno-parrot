@@ -11,6 +11,7 @@ version = 2
 ### IMPORT ###
 ##############
 import os, time,threading,socket,struct
+import ARDroneNavdata
 
 ###############
 ### GLOBALS ###
@@ -19,6 +20,10 @@ import os, time,threading,socket,struct
 COMMAND_PORT = 5556
 DATA_PORT = 5554
 VIDEO_PORT = 5555
+MAX_PACKET_SIZE = 1024*10
+def nothing(arg1="",arg2=""):
+    "Do nothing"
+    pass
 
 ###############
 ### CLASSES ###
@@ -26,7 +31,7 @@ VIDEO_PORT = 5555
 
 class ARDrone():
     "Classe qui gere un drone"
-    def __init__(self, ip = "192.168.1.1"):
+    def __init__(self, ip = "192.168.1.1",data_callback=nothing):
         self.ip = ip
         # Check drone availability
         if not _check_telnet(self.ip):
@@ -35,11 +40,16 @@ class ARDrone():
         self.com_thread = _CommandThread(self.ip)
         self.com_thread.start()
         self.c = self.com_thread.command # Alias
+        # Initialize the navdata thread
+        self.navthread = _NavdataThread(self.com_thread, data_callback)
+        self.navthread.start()
+        
     def stop(self):
         "Stop the AR.Drone"
         self.land()
         time.sleep(1)
         self.com_thread.stop()
+        self.navthread.stop()
     # Issuable command
     ## Take Off/Land/Emergency
     def takeoff(self):
@@ -110,7 +120,7 @@ class _CommandThread(threading.Thread):
         "Create the Command Thread"
         self.running = True
         self.ip = ip
-        self.counter = 1
+        self.counter = 10
         self.com = None
         self.port = COMMAND_PORT
         # Create the UDP Socket
@@ -122,6 +132,7 @@ class _CommandThread(threading.Thread):
         "Send commands every 30ms"
         while self.running:
             com = self.com
+            self.sock.send("AT*COMWDG\r")
             if com != None:
                 com = com.replace("#ID#",str(self.counter))
                 self.sock.send(com)
@@ -136,9 +147,47 @@ class _CommandThread(threading.Thread):
         return True
     def command(self,command):
         "Send a command to the AR.Drone"
-        
         self.com = command
         return True
+
+class _NavdataThread(threading.Thread):
+    "Manage the incoming data"
+    def __init__(self, communication, callback):
+        "Create the navdata handler thread"
+        self.running = True
+        self.port = DATA_PORT
+        self.size = MAX_PACKET_SIZE
+        self.com = communication
+        self.ip = self.com.ip
+        self.callback = callback
+        self.f = ARDroneNavdata.navdata_decode
+        # Initialize the server
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind(('0.0.0.0',self.port))
+        self.sock.setblocking(0)
+        threading.Thread.__init__(self)
+
+    def run(self):
+        "Start the data handler"
+        # Initialize the drone to send the data
+        self.sock.sendto("\x01\x00\x00\x00", (self.ip,self.port))
+        time.sleep(0.05)
+        self.com.sock.send("""AT*CONFIG=1,"general:navdata_demo","TRUE"\r""")
+        time.sleep(0.05)
+        self.com.sock.send("AT*CTRL=2,0\r")
+        while self.running:
+            try:
+                rep, client = self.sock.recvfrom(self.size)
+            except socket.error:
+                time.sleep(0.05)
+            else:
+                self.callback(self.f(rep))
+        
+    def stop(self):
+        "Stop the communication"
+        self.sock.close()
+        self.running = False
+        time.sleep(0.05)
         
 ###################
 ### DEFINITIONS ###
@@ -162,7 +211,7 @@ def float2dec(my_float):
     "Convert a python float to an int"
     return int(struct.unpack("l",struct.pack("f",float(my_float)))[0])
     
-    
+
     
     
 
