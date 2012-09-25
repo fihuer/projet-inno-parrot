@@ -79,9 +79,21 @@ def navdata_decode(packet):
     drone_state['adc_watchdog']        =block[0][1]>>29   & 1
     drone_state['com_watchdog']        =block[0][1]>>30   & 1
     drone_state['emergency']           =block[0][1]>>31   & 1
-
+    vision_detect=dict()
+    for i in range(1,len(block)):
+        if block[i][0]==16:
+            vision_detect["nb_detected"]=block[i][2][0:2]
+            vision_detect["type"]=block[i][2][2:4]
+            vision_detect["xc"]=block[i][2][4:6]
+            vision_detect["yc"]=block[i][2][6:8]
+            vision_detect["width"]=block[i][2][8:10]
+            vision_detect["height"]=block[i][2][10:12]
+            vision_detect["dist"]=block[i][2][12:14]
+            vision_detect["nb_detected"]=float(block[i][2][14:])
+    
     navdata=dict()
     navdata['drone_state']=drone_state
+    navdata['vision_detect']=vision_detect
     #navdata['vision'] = block[1]
     #navdata['header']=block[0][0]
     #navdata['sequence_nb']=block[0][2]
