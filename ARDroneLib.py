@@ -162,9 +162,6 @@ class _CommandThread(threading.Thread):
 
     def config(self, argument, value):
         "Set a configuration onto the drone"
-        print "Ready to config"
-        
-        print "Configuring ...",
         # Check if it's the first time we send a config
         if not self.is_configurated:
             # Activate the config
@@ -175,7 +172,6 @@ class _CommandThread(threading.Thread):
         self.lock.acquire()
         tries = 0
         while tries <= 3:
-            print tries,
             to_send = "AT*CONFIG_IDS="+str(self.counter) + ',"' + self.session_id + '","' + self.profile_id + '","' + self.app_id + '"\r'
             self.sock.send(to_send)
             time.sleep(0.05)
@@ -187,14 +183,13 @@ class _CommandThread(threading.Thread):
             if self.drone.navThread.last_drone_status["command_ack"] == 1:
                 break
             tries += 1
+        self.sock.send("AT*CTRL="+str(self.counter)+",5,0")
+        self.counter = self.counter + 1
         self.lock.release()
-        print "\nConfig Done !",
         
         if tries < 4:
-            print "OK"
             return True
         else:
-            print "Error"
             return False
 
 class _NavdataThread(threading.Thread):

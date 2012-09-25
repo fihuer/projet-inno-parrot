@@ -61,21 +61,37 @@ def _drone_status_decode(packet):
     drone_state['emergency']           = packet>>31   & 1
     return drone_state
 
+##def _vision_detect_decode(packet):
+##    "Decode the vision detection packet, packet is (id=13, size, data)"
+##    if packet[0] != 16:
+##        raise IOError("Packet is not vision packet")
+##    # Have to check if there isn't tag and size first
+##    decoded = struct.unpack_from("IIIIIIIf",packet[2],0)
+##    vision_detect = dict()
+##    vision_detect["nb_detected"] = decoded[0]
+##    vision_detect["type"] = decoded[1]
+##    vision_detect["xc"] = decoded[2]
+##    vision_detect["yc"] = decoded[3]
+##    vision_detect["width"] = decoded[4]
+##    vision_detect["height"] = decoded[5]
+##    vision_detect["dist"] = decoded[6]
+##    vision_detect["orientation"] = decoded[7]
+##    vision_detect["p"] = packet[2]
+##    return vision_detect
+
 def _vision_detect_decode(packet):
     "Decode the vision detection packet, packet is (id=13, size, data)"
     if packet[0] != 16:
         raise IOError("Packet is not vision packet")
     # Have to check if there isn't tag and size first
-    decoded = struct.unpack_from("IIIIIIIf",packet[2],0)
     vision_detect = dict()
-    vision_detect["nb_detected"] = decoded[0]
-    vision_detect["type"] = decoded[1]
-    vision_detect["xc"] = decoded[2]
-    vision_detect["yc"] = decoded[3]
-    vision_detect["width"] = decoded[4]
-    vision_detect["height"] = decoded[5]
-    vision_detect["dist"] = decoded[6]
-    vision_detect["orientation"] = decoded[7]
+    vision_detect["nb_detected"] = struct.unpack_from("I",packet[2][0:20])[0]
+    vision_detect["xc"] = struct.unpack_from("I",packet[2][20:36])[0]
+    vision_detect["yc"] = struct.unpack_from("I",packet[2][36:52])[0]
+    vision_detect["width"] = struct.unpack_from("I",packet[2][52:68])[0]
+    vision_detect["height"] = struct.unpack_from("I",packet[2][68:84])[0]
+    vision_detect["dist"] = struct.unpack_from("I",packet[2][84:100])[0]
+    #vision_detect["p"] = packet[2]
     return vision_detect
     
     

@@ -10,12 +10,14 @@ version = 2
 ##############
 ### IMPORT ###
 ##############
-import time, sys
+import time, sys, os
 import ARDroneLib, ARDroneGUI
 
 ###############
 ### GLOBALS ###
 ###############
+
+gui = None
 
 ###############
 ### CLASSES ###
@@ -81,10 +83,12 @@ def menu_list(drone):
         if result == "s": drone.down()
         if result == "q": drone.rotate_left()
         if result == "d": drone.rotate_right()
-        if result == "o": try_config(drone)
+        if result == "o": try_config()
         
 def Command_GUI(drone):
     "Create a GUI to command the drone"
+    global gui
+    print "-> Press o in the GUI to start tag regognition ..."
     gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
     gui.add_action("<Up>",drone.forward)
     gui.add_action("<Down>",drone.backward)
@@ -99,30 +103,49 @@ def Command_GUI(drone):
     gui.add_action("<Return>",drone.emergency)
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
+    gui.add_action("<o>",try_config)
     gui.start()
 
 def print_it(navdata):
     "Print the msg"
-    print navdata["vision_detect"],
+    global a    
+    #print navdata["vision_detect"]
     pass
-def try_config(drone):
+def update_gui(navdata):
+    "Update the GUI box"
+    global gui
+    if gui == None: return True
+    if navdata["vision_detect"] == None:    return True
+    new_text = ""
+    new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
+    new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
+    new_text = new_text + "YC: " + str(navdata["vision_detect"]["yc"]) + "\n"
+    new_text = new_text + "Width: " + str(navdata["vision_detect"]["width"]) + "\n"
+    new_text = new_text + "Height: " + str(navdata["vision_detect"]["height"]) + "\n"
+    new_text = new_text + "Distance " + str(navdata["vision_detect"]["dist"]) + "\n"
+    
+    gui.change_text(new_text)
+    
+def try_config():
     "Try to issue a command"
+    global drone
     drone.comThread.config("general:navdata_demo","FALSE")
     drone.comThread.config("detect:detect_type","13")
-    drone.comThread.config("detect:enemy_colors","3")
+    drone.comThread.config("detect:enemy_colors","2")
     drone.comThread.config("detect:enemy_without_shell","0")
     
 
 ##################
 ###  __MAIN__  ###
 ##################
-
+a = open("test.txt","w")
 if __name__ == "__main__":
+    global drone
     print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
     print "> By Viq (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     # Create the drone
-    drone = ARDroneLib.ARDrone(data_callback=print_it)
+    drone = ARDroneLib.ARDrone(data_callback=update_gui)
 ##    try:
 ##        drone = ARDroneLib.ARDrone(data_callback=print_it)
 ##    except StandardError:
@@ -135,4 +158,4 @@ if __name__ == "__main__":
     
     
     print "Done !"
-    
+a.close()    

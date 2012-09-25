@@ -30,6 +30,7 @@ class ControlWindow():
         self.default_action = default_action
         self.bhandler = ButtonHandler(default_action)
         self.bhandler.start()
+        self.text = None
         
     def add_action(self,button_bind,function_call):
         "Add an action when a key is pressed"
@@ -38,13 +39,21 @@ class ControlWindow():
     def start(self):
         "Activate the window (and keep the thread)"
         self.fen = Tk()
-        cadre = Frame(self.fen, width=200, height = 150, bg="grey")
+        cadre = Frame(self.fen, width=500, height = 200, bg="grey")
+        self.text = Label(self.fen,text="Waiting data ...", fg = "black")
+        self.text.pack()
         for act in self.actions:
             self.bhandler.add_action(act[0],act[1])
             self.fen.bind(act[0],lambda a=act[0]: self.bhandler.trigger(a))
         cadre.pack()
         self.fen.protocol("WM_DELETE_WINDOW", lambda a=1: kill_fen(self))
         self.fen.mainloop()
+    def change_text(self, new_text):
+        "Change the text inside the box"
+        if self.bhandler.running == False:  return False
+        if self.text == None:               return False
+        self.text.configure(text=str(new_text))
+        return True
 
 class ButtonHandler(threading.Thread):
     "Handle when the key are pressed or released"
