@@ -10,7 +10,7 @@ version = 2
 ##############
 ### IMPORT ###
 ##############
-import os, time,threading,socket,struct
+import os, time,threading,socket,struct, random
 import ARDroneNavdata
 
 ###############
@@ -37,19 +37,19 @@ class ARDrone():
         if not _check_telnet(self.ip):
             raise StandardError, "Cannot connect to AR.Drone2"
         # Initialise the communication thread
-        self.com_thread = _CommandThread(self.ip)
-        self.com_thread.start()
-        self.c = self.com_thread.command # Alias
+        self.comThread = _CommandThread(self.ip, self)
+        self.comThread.start()
+        self.c = self.comThread.command # Alias
         # Initialize the navdata thread
-        self.navthread = _NavdataThread(self.com_thread, data_callback)
-        self.navthread.start()
+        self.navThread = _NavdataThread(self.comThread, data_callback)
+        self.navThread.start()
         
     def stop(self):
         "Stop the AR.Drone"
         self.land()
         time.sleep(1)
-        self.com_thread.stop()
-        self.navthread.stop()
+        self.comThread.stop()
+        self.navThread.stop()
     # Issuable command
     ## Take Off/Land/Emergency
     def takeoff(self):
@@ -110,20 +110,29 @@ class ARDrone():
         "Make the drone turn right, speed is between 0 and 1"
         return self.navigate(angle_change=speed)
 
-    ## Special 
+    ## Special
 
 class _CommandThread(threading.Thread):
     "Classe qui gere les commandes Parrot car on doit en envoyer souvent"
-    def __init__(self,ip):
+    def __init__(self, ip, drone):
         "Create the Command Thread"
         self.running = True
         self.ip = ip
-        self.counter = 10
-        self.com = None
         self.port = COMMAND_PORT
+        self.drone = drone
+        
+        self.counter = 10 # Counter to issue AT command in order
+        self.com = None # Command issued
+        self.lock = threading.Lock() # Create the lock for the socket
         # Create the UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.connect((self.ip, self.port))
+        
+        # Create random ids
+        self.session_id =   "".join(random.sample("0123456789abcdef",8))
+        self.profile_id =      "".join(random.sample("0123456789abcdef",8))
+        self.app_id =       "".join(random.sample("0123456789abcdef",8))
+        self.is_configurated = False
         threading.Thread.__init__(self)
         
     def run(self):
@@ -133,7 +142,9 @@ class _CommandThread(threading.Thread):
             self.sock.send("AT*COMWDG\r")
             if com != None:
                 com = com.replace("#ID#",str(self.counter))
+                self.lock.acquire() # Ask for the permission to send msg
                 self.sock.send(com)
+                self.lock.release() # Release the socket
                 self.counter += 1
             time.sleep(0.03)
     
@@ -143,10 +154,48 @@ class _CommandThread(threading.Thread):
         self.running = False
         time.sleep(0.05)
         return True
+    
     def command(self,command):
         "Send a command to the AR.Drone"
         self.com = command
         return True
+
+    def config(self, argument, value):
+        "Set a configuration onto the drone"
+        print "Ready to config"
+        
+        print "Configuring ...",
+        # Check if it's the first time we send a config
+        if not self.is_configurated:
+            # Activate the config
+            self.is_configurated = True
+            self.config("custom:session_id",self.session_id)
+            self.config("custom:profile_id",self.profile_id)
+            self.config("custom:application_id",self.app_id)
+        self.lock.acquire()
+        tries = 0
+        while tries <= 3:
+            print tries,
+            to_send = "AT*CONFIG_IDS="+str(self.counter) + ',"' + self.session_id + '","' + self.profile_id + '","' + self.app_id + '"\r'
+            self.sock.send(to_send)
+            time.sleep(0.05)
+            to_send = "AT*CONFIG="+str(self.counter+1)+',"' + str(argument) + '","' + str(value) + '"\r'
+            self.sock.send(to_send)
+            self.counter = self.counter + 2
+            # Check if we receive acknowledgement
+            time.sleep(0.1)
+            if self.drone.navThread.last_drone_status["command_ack"] == 1:
+                break
+            tries += 1
+        self.lock.release()
+        print "\nConfig Done !",
+        
+        if tries < 4:
+            print "OK"
+            return True
+        else:
+            print "Error"
+            return False
 
 class _NavdataThread(threading.Thread):
     "Manage the incoming data"
@@ -159,6 +208,7 @@ class _NavdataThread(threading.Thread):
         self.ip = self.com.ip
         self.callback = callback
         self.f = ARDroneNavdata.navdata_decode
+        self.last_drone_status = None
         # Initialize the server
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('0.0.0.0',self.port))
@@ -170,16 +220,18 @@ class _NavdataThread(threading.Thread):
         # Initialize the drone to send the data
         self.sock.sendto("\x01\x00\x00\x00", (self.ip,self.port))
         time.sleep(0.05)
-        self.com.sock.send("""AT*CONFIG=1,"general:navdata_demo","TRUE"\r""")
-        time.sleep(0.05)
-        self.com.sock.send("AT*CTRL=2,0\r")
+        #self.com.sock.send("""AT*CONFIG=1,"general:navdata_demo","TRUE"\r""")
+        #time.sleep(0.05)
+        #self.com.sock.send("AT*CTRL=2,0\r")
         while self.running:
             try:
                 rep, client = self.sock.recvfrom(self.size)
             except socket.error:
                 time.sleep(0.05)
             else:
-                self.callback(self.f(rep))
+                rep = self.f(rep)
+                self.last_drone_status = rep["drone_state"]
+                self.callback(rep)
         
     def stop(self):
         "Stop the communication"

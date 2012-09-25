@@ -81,6 +81,7 @@ def menu_list(drone):
         if result == "s": drone.down()
         if result == "q": drone.rotate_left()
         if result == "d": drone.rotate_right()
+        if result == "o": try_config(drone)
         
 def Command_GUI(drone):
     "Create a GUI to command the drone"
@@ -100,10 +101,17 @@ def Command_GUI(drone):
     gui.add_action("<y>",drone.calibrate)
     gui.start()
 
-def print_it(msg):
-    "Pritn the msg"
-    #print msg["drone_state"]["video_on"],
+def print_it(navdata):
+    "Print the msg"
+    print navdata["vision_detect"],
     pass
+def try_config(drone):
+    "Try to issue a command"
+    drone.comThread.config("general:navdata_demo","FALSE")
+    drone.comThread.config("detect:detect_type","13")
+    drone.comThread.config("detect:enemy_colors","3")
+    drone.comThread.config("detect:enemy_without_shell","0")
+    
 
 ##################
 ###  __MAIN__  ###
@@ -114,11 +122,12 @@ if __name__ == "__main__":
     print "> By Viq (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     # Create the drone
-    try:
-        drone = ARDroneLib.ARDrone(data_callback=print_it)
-    except StandardError:
-        wait = raw_input("Cannot connect to drone !")
-        sys.exit()
+    drone = ARDroneLib.ARDrone(data_callback=print_it)
+##    try:
+##        drone = ARDroneLib.ARDrone(data_callback=print_it)
+##    except StandardError:
+##        wait = raw_input("Cannot connect to drone !")
+##        sys.exit()
 
     # Tests
     choose_sequence(drone)
