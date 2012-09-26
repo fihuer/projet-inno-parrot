@@ -143,7 +143,6 @@ def try_config():
 ##################
 ###  __MAIN__  ###
 ##################
-a = open("test.txt","w")
 if __name__ == "__main__":
     global drone
     print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
@@ -162,5 +161,4 @@ if __name__ == "__main__":
     drone.stop()
     
     
-    print "Done !"
-a.close()    
+    print "Done !" 
