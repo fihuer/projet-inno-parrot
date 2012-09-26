@@ -146,6 +146,9 @@ def navdata_decode(packet):
             if block[i][0]==16:
                 vision_detect = _vision_detect_decode(block[i])
             # Checksum option
+            elif block[i][0]==0:
+                navdata_demo = _option_0_decode(block[i])
+
             elif block[i][0] == 65535:
                 pass
             # Else we don't know
