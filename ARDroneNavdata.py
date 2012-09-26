@@ -85,12 +85,12 @@ def _vision_detect_decode(packet):
         raise IOError("Packet is not vision packet")
     # Have to check if there isn't tag and size first
     vision_detect = dict()
-    vision_detect["nb_detected"] = struct.unpack_from("I",packet[2][0:20])[0]
-    vision_detect["xc"] = struct.unpack_from("I",packet[2][20:36])[0]
-    vision_detect["yc"] = struct.unpack_from("I",packet[2][36:52])[0]
-    vision_detect["width"] = struct.unpack_from("I",packet[2][52:68])[0]
-    vision_detect["height"] = struct.unpack_from("I",packet[2][68:84])[0]
-    vision_detect["dist"] = struct.unpack_from("I",packet[2][84:100])[0]
+    vision_detect["nb_detected"] = struct.unpack_from("=I",packet[2][0:20])[0]
+    vision_detect["xc"] = struct.unpack_from("=I",packet[2][20:36])[0]
+    vision_detect["yc"] = struct.unpack_from("=I",packet[2][36:52])[0]
+    vision_detect["width"] = struct.unpack_from("=I",packet[2][52:68])[0]
+    vision_detect["height"] = struct.unpack_from("=I",packet[2][68:84])[0]
+    vision_detect["dist"] = struct.unpack_from("=I",packet[2][84:100])[0]
     #vision_detect["p"] = packet[2]
     return vision_detect
     
@@ -103,19 +103,19 @@ def navdata_decode(packet):
     position=0
     offset = 0
     block=[]
-    block.append(struct.unpack_from("IIII",packet,position))
-    offset += struct.calcsize("IIII")
+    block.append(struct.unpack_from("=IIII",packet,position))
+    offset += struct.calcsize("=IIII")
     i=1
 
     while 1:
         try:
             block.append([])
-            block[i]=list(struct.unpack_from("HH",packet,offset)) #Separate Option ID & Size of option int
-            offset += struct.calcsize("HH")
+            block[i]=list(struct.unpack_from("=HH",packet,offset)) #Separate Option ID & Size of option int
+            offset += struct.calcsize("=HH")
         except struct.error:
             break
-        block[i].append(packet[offset:offset-struct.calcsize("HH")+int(block[i][1])])
-        offset += block[i][1] - struct.calcsize("HH")
+        block[i].append(packet[offset:offset-struct.calcsize("=HH")+int(block[i][1])])
+        offset += block[i][1] - struct.calcsize("=HH")
         i=i+1
     # block[0]      is (header, drone_state, sequence_number, vision_flag)
     # block[1:-1]   is Option0, Option1 ...
@@ -126,15 +126,24 @@ def navdata_decode(packet):
     vision_detect = None
 
     # For each option
+    unsupported_option = []
     for i in range(1,len(block)):
-        # If it's vision detection option
         if block[i] != []:
+            # Vision detection option
             if block[i][0]==16:
                 vision_detect = _vision_detect_decode(block[i])
+            # Checksum option
+            elif block[i][0] == 65535:
+                pass
+            # Else we don't know
+            else:
+                unsupported_option.append(block[i][0])
+                
     
     navdata=dict()
     navdata['drone_state']=drone_state
     navdata['vision_detect']=vision_detect
+    navdata['unsupported_option'] = unsupported_option
     #navdata['vision_flag']=block[0][3]
     return navdata
     

@@ -139,13 +139,13 @@ class _CommandThread(threading.Thread):
         "Send commands every 30ms"
         while self.running:
             com = self.com
+            self.lock.acquire() # Ask for the permission to send msg
             self.sock.send("AT*COMWDG\r")
             if com != None:
                 com = com.replace("#ID#",str(self.counter))
-                self.lock.acquire() # Ask for the permission to send msg
                 self.sock.send(com)
-                self.lock.release() # Release the socket
                 self.counter += 1
+            self.lock.release() # Release the socket
             time.sleep(0.03)
     
     def stop(self):
@@ -254,7 +254,7 @@ def bin2dec(bin):
     return int(bin,2)
 def float2dec(my_float):
     "Convert a python float to an int"
-    return int(struct.unpack("l",struct.pack("f",float(my_float)))[0])
+    return int(struct.unpack("=l",struct.pack("f",float(my_float)))[0])
     
 
     

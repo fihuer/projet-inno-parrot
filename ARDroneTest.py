@@ -117,6 +117,7 @@ def update_gui(navdata):
     if gui == None: return True
     if navdata["vision_detect"] == None:    return True
     new_text = ""
+    new_text = new_text + "Unsupported options: " + str(navdata["unsupported_option"]) + "\n"
     new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
     new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
     new_text = new_text + "YC: " + str(navdata["vision_detect"]["yc"]) + "\n"
@@ -129,10 +130,14 @@ def update_gui(navdata):
 def try_config():
     "Try to issue a command"
     global drone
+    print "-> Starting recognition ...."
     drone.comThread.config("general:navdata_demo","FALSE")
     drone.comThread.config("detect:detect_type","13")
-    drone.comThread.config("detect:enemy_colors","2")
+    # color = "2"# Yellow-Orange
+    color = "3" # Blue-Orange
+    drone.comThread.config("detect:enemy_colors",color)
     drone.comThread.config("detect:enemy_without_shell","0")
+    print "-> Started ..."
     
 
 ##################
