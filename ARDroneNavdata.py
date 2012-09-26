@@ -80,9 +80,9 @@ def _drone_status_decode(packet):
 ##    return vision_detect
 
 def _vision_detect_decode(packet):
-    "Decode the vision detection packet, packet is (id=13, size, data)"
+    "Decode the vision detection packet, packet is (id=16, size, data)"
     if packet[0] != 16:
-        raise IOError("Packet is not vision packet")
+        raise IOError("Packet is not vision-detect packet")
     # Have to check if there isn't tag and size first
     vision_detect = dict()
     vision_detect["nb_detected"] = struct.unpack_from("=I",packet[2][0:20])[0]
@@ -94,7 +94,20 @@ def _vision_detect_decode(packet):
     #vision_detect["p"] = packet[2]
     return vision_detect
     
-    
+def _option_0_decode(packet):
+    option_0=dict()
+    if packet[0]!=0:
+        raise IOError("Packet isn't navdata-demo packet")
+    option_0["ctrl_state"]= struct.unpack_from("=I",packet[2],0)
+    option_0["vbat_flying_percentage"]= struct.unpack_from("=I",packet[2],4)
+    option_0["theta"]= struct.unpack_from("=f",packet[2],8)
+    option_0["phi"]= struct.unpack_from("=f",packet[2],12)
+    option_0["psi"]= struct.unpack_from("=f",packet[2],16)
+    option_0["altitude"]=struct.unpack_from("=i",packet[2],20) #signed integer ?! Must verify by snifing it
+    option_0["vx"]=struct.unpack_from("=f",packet[2],24)
+    option_0["vy"]=struct.unpack_from("=f",packet[2],28)
+    option_0["vz"]=struct.unpack_from("=f",packet[2],32)
+    option_0["shit"]=packet[2][36:]
     
     
 
