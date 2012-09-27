@@ -118,13 +118,13 @@ def update_gui(navdata):
     if navdata["vision_detect"] == None:    return True
     new_text = ""
     new_text = new_text + "Unsupported options: " + str(navdata["unsupported_option"]) + "\n"
-##    new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
-##    new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
-##    new_text = new_text + "YC: " + str(navdata["vision_detect"]["yc"]) + "\n"
-##    new_text = new_text + "Width: " + str(navdata["vision_detect"]["width"]) + "\n"
-##    new_text = new_text + "Height: " + str(navdata["vision_detect"]["height"]) + "\n"
-##    new_text = new_text + "Distance " + str(navdata["vision_detect"]["dist"]) + "\n"
-    new_text = new_text + str(navdata['navdata_demo'])
+    new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
+    new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
+    new_text = new_text + "YC: " + str(navdata["vision_detect"]["yc"]) + "\n"
+    new_text = new_text + "Width: " + str(navdata["vision_detect"]["width"]) + "\n"
+    new_text = new_text + "Height: " + str(navdata["vision_detect"]["height"]) + "\n"
+    new_text = new_text + "Distance " + str(navdata["vision_detect"]["dist"]) + "\n"
+##    new_text = new_text + str(navdata['navdata_demo'])
     
     gui.change_text(new_text)
     
@@ -134,8 +134,8 @@ def try_config():
     print "-> Starting recognition ...."
     drone.comThread.config("general:navdata_demo","FALSE")
     drone.comThread.config("detect:detect_type","13")
-    color = "2"# Yellow-Orange
-    #color = "3" # Blue-Orange
+    #color = "2"# Yellow-Orange
+    color = "3" # Blue-Orange
     drone.comThread.config("detect:enemy_colors",color)
     drone.comThread.config("detect:enemy_without_shell","0")
     print "-> Started ..."

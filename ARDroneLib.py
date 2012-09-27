@@ -147,10 +147,10 @@ class _CommandThread(threading.Thread):
                 self.counter += 1
             self.lock.release() # Release the socket
             time.sleep(0.03)
+        self.sock.close()
     
     def stop(self):
         "Stop the communication"
-        self.sock.close()
         self.running = False
         time.sleep(0.05)
         return True
@@ -227,10 +227,11 @@ class _NavdataThread(threading.Thread):
                 rep = self.f(rep)
                 self.last_drone_status = rep["drone_state"]
                 self.callback(rep)
+        self.sock.close()
         
     def stop(self):
         "Stop the communication"
-        self.sock.close()
+        
         self.running = False
         time.sleep(0.05)
         
