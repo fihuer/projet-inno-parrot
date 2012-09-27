@@ -2,7 +2,7 @@
 # ARDrone Package
 prog_name = "AR.Drone NavData"
 # version:
-version = 1
+version = 2
 # By Viq
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
@@ -98,16 +98,16 @@ def _option_0_decode(packet):
     option_0=dict()
     if packet[0]!=0:
         raise IOError("Packet isn't navdata-demo packet")
-    option_0["ctrl_state"]= struct.unpack_from("=I",packet[2],0)
-    option_0["vbat_flying_percentage"]= struct.unpack_from("=I",packet[2],4)
-    option_0["theta"]= struct.unpack_from("=f",packet[2],8)
-    option_0["phi"]= struct.unpack_from("=f",packet[2],12)
-    option_0["psi"]= struct.unpack_from("=f",packet[2],16)
-    option_0["altitude"]=struct.unpack_from("=i",packet[2],20) #signed integer ?! Must verify by snifing it
-    option_0["vx"]=struct.unpack_from("=f",packet[2],24)
-    option_0["vy"]=struct.unpack_from("=f",packet[2],28)
-    option_0["vz"]=struct.unpack_from("=f",packet[2],32)
-    option_0["shit"]=packet[2][36:]
+    option_0["ctrl_state"]= struct.unpack_from("=I",packet[2],0)[0]
+    option_0["vbat_flying_percentage"]= struct.unpack_from("=I",packet[2],4)[0]
+    option_0["theta"]= int(struct.unpack_from("=f",packet[2],8)[0]/1000)
+    option_0["phi"]= int(struct.unpack_from("=f",packet[2],12)[0]/1000)
+    option_0["psi"]= struct.unpack_from("=f",packet[2],16)[0]
+    option_0["altitude"]=struct.unpack_from("=i",packet[2],20)[0]
+    option_0["vx"]=int(struct.unpack_from("=f",packet[2],24)[0])
+    option_0["vy"]=int(struct.unpack_from("=f",packet[2],28)[0])
+    option_0["vz"]=int(struct.unpack_from("=f",packet[2],32)[0])
+    return option_0
     
     
 
@@ -137,6 +137,7 @@ def navdata_decode(packet):
     # Decode the drone state
     drone_state = _drone_status_decode(block[0][1])
     vision_detect = None
+    navdata_demo = None
 
     # For each option
     unsupported_option = []
@@ -145,10 +146,10 @@ def navdata_decode(packet):
             # Vision detection option
             if block[i][0]==16:
                 vision_detect = _vision_detect_decode(block[i])
-            # Checksum option
+            # Option0: Navdata_demo(useful data)
             elif block[i][0]==0:
                 navdata_demo = _option_0_decode(block[i])
-
+            # Checksum option
             elif block[i][0] == 65535:
                 pass
             # Else we don't know
@@ -159,8 +160,8 @@ def navdata_decode(packet):
     navdata=dict()
     navdata['drone_state']=drone_state
     navdata['vision_detect']=vision_detect
+    navdata['navdata_demo'] = navdata_demo
     navdata['unsupported_option'] = unsupported_option
-    #navdata['vision_flag']=block[0][3]
     return navdata
     
     

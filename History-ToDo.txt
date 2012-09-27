@@ -2,15 +2,9 @@
 # ARDroneLib: #
 ###############
 
-ToDo:
-- Recupération des données de navigation
-
-- Configuration du Drone
-- Activation des tags
-- Recupération des données Tag
-
-- Récupération de la vidéo
-
+r3:
+- Ajout du support des données de navigation (NavData)
+- Ajout de la commande config
 
 r2:
 - Nouvelles commandes:
@@ -24,16 +18,25 @@ r1:
 - Nouvelles commandes: Take Off, Land, Emergency
 
 
+###################
+# ARDroneNavdata: #
+###################
 
+r2:
+- Ajout des données de tags
+- Ajout des données de naivgation (navdata_demo)
+
+r1:
+- Ajout de l'état du Drone
 
 
 ################
 # ARDroneTest: #
 ################
 
-ToDo:
-- Affichage des données
-- Affichage graphique
+r3:
+- Ajout de l'affichage des données
+
 
 r2:
 - Ajout d'une interface graphique
