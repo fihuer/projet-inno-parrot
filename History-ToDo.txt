@@ -1,3 +1,7 @@
+ToDo:
+- Rajouter dans ARDroneGUI une fonction pour afficher des données simplement
+- Rajouter dans ARDroneConfig une fonction poru envoyer le drone a un point GPS
+
 ###############
 # ARDroneLib: #
 ###############

@@ -3,7 +3,7 @@
 prog_name = "AR.Drone Test"
 # version:
 version = 3
-# By Viq
+# By Vianney Tran, Romain Fihue, Giulia Guid, Julien Lagarde
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
 
@@ -11,7 +11,7 @@ version = 3
 ### IMPORT ###
 ##############
 import time, sys, os
-import ARDroneLib, ARDroneGUI
+import ARDroneLib, ARDroneGUI, ARDroneConfig
 
 ###############
 ### GLOBALS ###
@@ -103,7 +103,8 @@ def Command_GUI(drone):
     gui.add_action("<Return>",drone.emergency)
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
-    gui.add_action("<o>",try_config)
+    gui.add_action("<o>",lambda arg=drone: ARDroneConfig.activate_drone_detection(drone))
+    gui.change_text("Waiting data ...\nYou can press o to start reception...")
     gui.start()
 
 def print_it(navdata):
@@ -126,7 +127,6 @@ def update_gui(navdata):
     new_text = new_text + "Elevation: " + str(navdata["gps_info"]["elevation"]) + "\n"
     new_text = new_text + "Hdop: " + str(navdata["gps_info"]["hdop"]) + "\n"
     new_text = new_text + "State: " + str(navdata["gps_info"]["data_available"]) + "\n"
-
     # Tags
 ##    new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
 ##    new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
@@ -136,18 +136,6 @@ def update_gui(navdata):
 ##    new_text = new_text + "Distance " + str(navdata["vision_detect"]["dist"]) + "\n"
     
     gui.change_text(new_text)
-    
-def try_config():
-    "Try to issue a command"
-    global drone
-    print "-> Starting recognition ...."
-    drone.comThread.config("general:navdata_demo","FALSE")
-    drone.comThread.config("detect:detect_type","13")
-    #color = "2"# Yellow-Orange
-    color = "3" # Blue-Orange
-    drone.comThread.config("detect:enemy_colors",color)
-    drone.comThread.config("detect:enemy_without_shell","0")
-    print "-> Started ..."
     
 
 ##################
@@ -159,7 +147,7 @@ if __name__ == "__main__":
     print "> By Viq (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     # Create the drone
-    drone = ARDroneLib.ARDrone(data_callback=update_gui)
+    drone = ARDroneLib.Drone(data_callback=update_gui)
 ##    try:
 ##        drone = ARDroneLib.ARDrone(data_callback=print_it)
 ##    except StandardError:

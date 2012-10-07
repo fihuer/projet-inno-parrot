@@ -3,7 +3,7 @@
 prog_name = "AR.Drone2 Lib"
 # version:
 version = 3
-# By Viq
+# By Vianney Tran, Romain Fihue, Giulia Guid, Julien Lagarde
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
 
@@ -29,7 +29,7 @@ def nothing(arg1="",arg2=""):
 ### CLASSES ###
 ###############
 
-class ARDrone():
+class Drone():
     "Classe qui gere un drone"
     def __init__(self, ip = "192.168.1.1",data_callback=nothing):
         self.ip = ip
