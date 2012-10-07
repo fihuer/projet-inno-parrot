@@ -61,24 +61,6 @@ def _drone_status_decode(packet):
     drone_state['emergency']           = packet>>31   & 1
     return drone_state
 
-##def _vision_detect_decode(packet):
-##    "Decode the vision detection packet, packet is (id=13, size, data)"
-##    if packet[0] != 16:
-##        raise IOError("Packet is not vision packet")
-##    # Have to check if there isn't tag and size first
-##    decoded = struct.unpack_from("IIIIIIIf",packet[2],0)
-##    vision_detect = dict()
-##    vision_detect["nb_detected"] = decoded[0]
-##    vision_detect["type"] = decoded[1]
-##    vision_detect["xc"] = decoded[2]
-##    vision_detect["yc"] = decoded[3]
-##    vision_detect["width"] = decoded[4]
-##    vision_detect["height"] = decoded[5]
-##    vision_detect["dist"] = decoded[6]
-##    vision_detect["orientation"] = decoded[7]
-##    vision_detect["p"] = packet[2]
-##    return vision_detect
-
 def _vision_detect_decode(packet):
     "Decode the vision detection packet, packet is (id=16, size, data)"
     if packet[0] != 16:
@@ -94,20 +76,34 @@ def _vision_detect_decode(packet):
     #vision_detect["p"] = packet[2]
     return vision_detect
     
-def _option_0_decode(packet):
-    option_0=dict()
+def _navdata_demo_decode(packet):
+    "Decode the navdata_demo which is data about the flight"
+    navdata_demo=dict()
     if packet[0]!=0:
         raise IOError("Packet isn't navdata-demo packet")
-    option_0["ctrl_state"]= struct.unpack_from("=I",packet[2],0)[0]
-    option_0["vbat_flying_percentage"]= struct.unpack_from("=I",packet[2],4)[0]
-    option_0["theta"]= int(struct.unpack_from("=f",packet[2],8)[0]/1000)
-    option_0["phi"]= int(struct.unpack_from("=f",packet[2],12)[0]/1000)
-    option_0["psi"]= struct.unpack_from("=f",packet[2],16)[0]
-    option_0["altitude"]=struct.unpack_from("=i",packet[2],20)[0]
-    option_0["vx"]=int(struct.unpack_from("=f",packet[2],24)[0])
-    option_0["vy"]=int(struct.unpack_from("=f",packet[2],28)[0])
-    option_0["vz"]=int(struct.unpack_from("=f",packet[2],32)[0])
-    return option_0
+    navdata_demo["ctrl_state"]= struct.unpack_from("=I",packet[2],0)[0]
+    navdata_demo["battery_percentage"]= struct.unpack_from("=I",packet[2],4)[0]
+    navdata_demo["theta"]= int(struct.unpack_from("=f",packet[2],8)[0]/1000)
+    navdata_demo["phi"]= int(struct.unpack_from("=f",packet[2],12)[0]/1000)
+    navdata_demo["psi"]= struct.unpack_from("=f",packet[2],16)[0]
+    navdata_demo["altitude"]=struct.unpack_from("=i",packet[2],20)[0]
+    navdata_demo["vx"]=int(struct.unpack_from("=f",packet[2],24)[0])
+    navdata_demo["vy"]=int(struct.unpack_from("=f",packet[2],28)[0])
+    navdata_demo["vz"]=int(struct.unpack_from("=f",packet[2],32)[0])
+    return navdata_demo
+
+def _gps_decode(packet):
+    "Decode data about the GPS"
+    gps_info = dict()
+    if packet[0]!=27:
+        raise IOError("Packet isn't navdata-demo packet")
+    gps_info["latitude"]= struct.unpack_from("=d",packet[2],0)[0]
+    gps_info["longitude"]= struct.unpack_from("=d",packet[2],8)[0]
+    gps_info["elevation"]= int(struct.unpack_from("=d",packet[2],16)[0]/1000)
+    gps_info["hdop"]= int(struct.unpack_from("=d",packet[2],24)[0]/1000)
+    gps_info["data_available"]= struct.unpack_from("=B",packet[2],32)[0]
+    return gps_info
+    
     
     
 
@@ -138,6 +134,7 @@ def navdata_decode(packet):
     drone_state = _drone_status_decode(block[0][1])
     vision_detect = None
     navdata_demo = None
+    gps_info = None
 
     # For each option
     unsupported_option = []
@@ -148,7 +145,10 @@ def navdata_decode(packet):
                 vision_detect = _vision_detect_decode(block[i])
             # Option0: Navdata_demo(useful data)
             elif block[i][0]==0:
-                navdata_demo = _option_0_decode(block[i])
+                navdata_demo = _navdata_demo_decode(block[i])
+            # GPS Info
+            elif block[i][0]==27:
+                gps_info = _gps_decode(block[i])
             # Checksum option
             elif block[i][0] == 65535:
                 pass
@@ -161,6 +161,7 @@ def navdata_decode(packet):
     navdata['drone_state']=drone_state
     navdata['vision_detect']=vision_detect
     navdata['navdata_demo'] = navdata_demo
+    navdata['gps_info'] = gps_info
     navdata['unsupported_option'] = unsupported_option
     return navdata
     

@@ -117,14 +117,23 @@ def update_gui(navdata):
     if gui == None: return True
     if navdata["vision_detect"] == None:    return True
     new_text = ""
+    new_text = new_text + "Battery: " + str(navdata["navdata_demo"]["battery_percentage"]) + "%\n"
     new_text = new_text + "Unsupported options: " + str(navdata["unsupported_option"]) + "\n"
-    new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
-    new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
-    new_text = new_text + "YC: " + str(navdata["vision_detect"]["yc"]) + "\n"
-    new_text = new_text + "Width: " + str(navdata["vision_detect"]["width"]) + "\n"
-    new_text = new_text + "Height: " + str(navdata["vision_detect"]["height"]) + "\n"
-    new_text = new_text + "Distance " + str(navdata["vision_detect"]["dist"]) + "\n"
-##    new_text = new_text + str(navdata['navdata_demo'])
+    
+    # GPS
+    new_text = new_text + "Latitude: " + str(navdata["gps_info"]["latitude"]) + "\n"
+    new_text = new_text + "Longitude: " + str(navdata["gps_info"]["longitude"]) + "\n"
+    new_text = new_text + "Elevation: " + str(navdata["gps_info"]["elevation"]) + "\n"
+    new_text = new_text + "Hdop: " + str(navdata["gps_info"]["hdop"]) + "\n"
+    new_text = new_text + "State: " + str(navdata["gps_info"]["data_available"]) + "\n"
+
+    # Tags
+##    new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
+##    new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
+##    new_text = new_text + "YC: " + str(navdata["vision_detect"]["yc"]) + "\n"
+##    new_text = new_text + "Width: " + str(navdata["vision_detect"]["width"]) + "\n"
+##    new_text = new_text + "Height: " + str(navdata["vision_detect"]["height"]) + "\n"
+##    new_text = new_text + "Distance " + str(navdata["vision_detect"]["dist"]) + "\n"
     
     gui.change_text(new_text)
     
