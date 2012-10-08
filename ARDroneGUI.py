@@ -40,13 +40,14 @@ class ControlWindow():
         "Add something in navdata to print, tree is a tulpe"
         # Check if the arguments are good
         if type(tree) != type((0,0)):   raise TypeError("Tree must be a tulpe")
-        self.to_print.append(str(description),tree)
+        self.to_print.append((str(description),tree))
         return True
 
     def callback(self, navdata):
         "Callback function that can be given to Navdata filter"
         new_text = ""
-        for p in self.to_print.keys():
+        if navdata["navdata_demo"] is None: return False
+        for p in self.to_print:
             # Get data
             data = navdata
             # Get the tree

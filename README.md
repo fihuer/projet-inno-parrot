@@ -4,11 +4,12 @@ Python ARDrone Libray for AR.Drone 2.0 to 2.3
 ARDroneLib is a library for AR.Drone 2 developped in Python
 You can control your AR.Drone with our library
 It's as easy as:
-> import ARDroneLib
-> drone = ARDroneLib.Drone()
-> drone.takeoff()
-> drone.land()
-
+<pre>
+import ARDroneLib
+drone = ARDroneLib.Drone()
+drone.takeoff()
+drone.land()
+</pre>
 It doesn't require any third party library and can work as a stand-alone or an easy library to access your drone
 
 Here is the description of each file:

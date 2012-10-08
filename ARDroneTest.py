@@ -54,10 +54,11 @@ class Log():
 
 class GPS_Coord():
     "Very little class to store GPS Coord"
-    def __init__(self, longi=None, lati=None):
+    def setPoint(self, longi=None, lati=None):
         self.lo = longi
         self.la = lati
-    setPoint = __init__
+        print "> Saved navpoint:",(self.lo,self.la)
+    __init__ = setPoint
     def getPoint(self): return (self.lo, self.la)
 ###################
 ### DEFINITIONS ###
@@ -79,7 +80,7 @@ def save_gps_coord(navdata):
     if navdata["gps_info"] == None:    return False
     last_coord = (navdata["gps_info"]["longitude"],navdata["gps_info"]["latitude"])
     # And refresh GUI
-    gui.callback(navdata)  
+    gui.callback(navdata)
     return True
 
 ##################
@@ -101,9 +102,10 @@ def choose_sequence(drone):
         menu_list(drone)
     elif result == "3":
         print "-> Launching GUI ..."
-        Command_GUI(drone)
+        command_GUI(drone)
     elif result == "4":
         print "-> Starting GPS Test ..."
+        GPS_Command(drone)
 
 # 1st Test: Just testing commands
 def takeoff_land(drone):
@@ -150,7 +152,7 @@ def menu_list(drone):
         if result == "o": try_config()
 
 # 3nd test
-def Command_GUI(drone):
+def command_GUI(drone):
     "Create a GUI to command the drone"
     global gui
     gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
@@ -169,6 +171,7 @@ def Command_GUI(drone):
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
     gui.add_action("<o>",lambda arg=drone: ARDroneConfig.activate_drone_detection(drone))
+    print "-> Press o to start gathering data..."
     # Add info
     gui.add_printable_data("Battery",("navdata_demo","battery_percentage"))
     gui.add_printable_data("Number of tags",("vision_detect","nb_detected"))
@@ -199,10 +202,11 @@ def GPS_Command(drone):
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
     gui.add_action("<o>",lambda arg=drone: ARDroneConfig.activate_drone_detection(drone))
+    print "-> Press o to start gathering data..."
     ## GPS
-    gui.add_action("<f>",lambda arg=last_coord: pos1.setPoint(last_coord))
-    gui.add_action("<g>",lambda arg=last_coord: pos2.setPoint(last_coord))
-    gui.add_action("<h>",lambda arg=last_coord: pos3.setPoint(last_coord))
+    gui.add_action("<f>",lambda arg=last_coord: pos1.setPoint(last_coord[0],last_coord[1]))
+    gui.add_action("<g>",lambda arg=last_coord: pos2.setPoint(last_coord[0],last_coord[1]))
+    gui.add_action("<h>",lambda arg=last_coord: pos3.setPoint(last_coord[0],last_coord[1]))
 
     gui.add_action("<v>",lambda arg=pos1: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
     gui.add_action("<b>",lambda arg=pos2: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
@@ -215,7 +219,8 @@ def GPS_Command(drone):
     gui.add_printable_data("Altitude",("gps_info","elevation"))
     gui.add_printable_data("HDOP",("gps_info","hdop"))
     gui.add_printable_data("State",("gps_info","data_available"))
-    gui.change_text("Press o to start reception...\nF,G,H - Save GPS point\n V,B,N - GOTO GPS Point")
+    gui.change_text("Press o to start reception...\nF,G,H - Save GPS point\nV,B,N - GOTO GPS Point")
+    print "Press o to start reception...\nF,G,H - Save GPS point\nV,B,N - GOTO GPS Point"
     # We don't start change the callback because we would lost gps info outside the gui
     gui.start()
 

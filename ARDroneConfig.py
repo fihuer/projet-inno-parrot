@@ -40,6 +40,7 @@ def activate_drone_detection(drone, color=0):
 def goto_gps_point(drone, longitude, latitude, altitude=3, cap=0):
     "Send the drone to the GPS point, cap is in degre"
     if (longitude is None) or (latitude is None):   return False
+    if (longitude == 0) or (latitude == 0):   return False # Try not to send drone to somewhere weird
     print "> Sending drone to GPS point ",longitude,latitude,altitude,"..."
     # Compute each data
     longi = int(longitude*1000000)
