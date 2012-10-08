@@ -19,9 +19,11 @@ Here is the description of each file:
 This is a sub-library to easily send configuration to your drone.
 See inside the file which config you can send, but it can basicaly send config like activate tag detection or go to a GPS Navpoint
 Example:
-> import ARDroneLib, ARDroneConfig
-> drone = ARDroneLib.Drone(my_callback_function)
-> ARDroneConfig.activate_tag_detection(drone)
+<pre>
+import ARDroneLib, ARDroneConfig
+drone = ARDroneLib.Drone(my_callback_function)
+ARDroneConfig.activate_tag_detection(drone)
+</pre>
 Then the tag detection data will be sent to the callback function
 
 ######################
@@ -29,11 +31,13 @@ Then the tag detection data will be sent to the callback function
 ######################
 This file implements a simple GUI to control your drone and print data easily
 Example:
-> import ARDroneLib, ARDroneGUI
-> drone = ARDroneLib.Drone()
-> gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
-> gui.add_action("<W>", drone.forward)
-> gui.change_text("Hello World !")
+<pre>
+import ARDroneLib, ARDroneGUI
+drone = ARDroneLib.Drone()
+gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
+gui.add_action("<W>", drone.forward)
+gui.change_text("Hello World !")
+</pre>
 
 ######################
 ###   ARDroneLib   ###
@@ -41,12 +45,14 @@ Example:
 This is the main file which enable you to control your drone
 All the easy function are implemented to control your drone without taking care of the information you have to send.
 Example:
-> import ARDroneLib
-> drone = ARDroneLib.Drone()
-> drone.takeoff()
-> drone.forward()
-> drone.hover()
-> drone.land()
+<pre>
+import ARDroneLib
+drone = ARDroneLib.Drone()
+drone.takeoff()
+drone.forward()
+drone.hover()
+drone.land()
+</pre>
 
 ######################
 ### ARDroneNavdata ###
@@ -56,8 +62,10 @@ You don't actually need to call it into your program because ARDroneLib do it fo
 which receive a navdata dictionary as the sole argument.
 See inside the file to know what is sent back to your function
 Example:
-> import ARDroneLib
-> drone = ARDroneLib.Drone(data_callback=my_callback_function)
+<pre>
+import ARDroneLib
+drone = ARDroneLib.Drone(data_callback=my_callback_function)
+</pre>
 
 ######################
 ###   ARDroneTest  ###

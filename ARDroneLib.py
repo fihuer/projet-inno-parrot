@@ -1,6 +1,6 @@
 # -*- coding:Utf-8 -*-
 # ARDrone Package
-prog_name = "AR.Drone2 Lib"
+prog_name = "AR.Drone Lib"
 # version:
 version = 3
 # By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde
@@ -50,6 +50,12 @@ class Drone():
         time.sleep(1)
         self.comThread.stop()
         self.navThread.stop()
+    def change_callback(self, new_callback):
+        "Change the callback function"
+        # Check if the argument is a function
+        if not hasattr(new_callback, '__call__'):   raise TypeError("Need a function")
+        return self.navThread.change_callback(new_callback)
+        
     # Issuable command
     ## Take Off/Land/Emergency
     def takeoff(self):
@@ -209,6 +215,12 @@ class _NavdataThread(threading.Thread):
         self.sock.bind(('0.0.0.0',self.port))
         self.sock.setblocking(0)
         threading.Thread.__init__(self)
+    def change_callback(self, new_callback):
+        "Change the callback function"
+        # Check if the argument is a function
+        if not hasattr(new_callback, '__call__'):   return False
+        self.callback = new_callback
+        return True
 
     def run(self):
         "Start the data handler"
@@ -231,7 +243,6 @@ class _NavdataThread(threading.Thread):
         
     def stop(self):
         "Stop the communication"
-        
         self.running = False
         time.sleep(0.05)
         
@@ -267,6 +278,6 @@ def float2dec(my_float):
 
 if __name__ == "__main__":
     print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
-    print "> By Viq (under CC BY-SA 3.0 license)"
+    print "> By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     print "> This is a library only, please use the test instead"

@@ -27,15 +27,39 @@ class ControlWindow():
     def __init__(self,default_action):
         "Create a window to control the drone"
         self.actions = []
-        self.default_action = default_action
         self.bhandler = ButtonHandler(default_action)
         self.bhandler.start()
         self.text = None
+        self.to_print = list()
         
     def add_action(self,button_bind,function_call):
         "Add an action when a key is pressed"
         self.actions.append((button_bind,function_call))
         return True
+    def add_printable_data(self, description, tree):
+        "Add something in navdata to print, tree is a tulpe"
+        # Check if the arguments are good
+        if type(tree) != type((0,0)):   raise TypeError("Tree must be a tulpe")
+        self.to_print.append(str(description),tree)
+        return True
+
+    def callback(self, navdata):
+        "Callback function that can be given to Navdata filter"
+        new_text = ""
+        for p in self.to_print.keys():
+            # Get data
+            data = navdata
+            # Get the tree
+            for key in p[1]:
+                if data != None:
+                    data = data[str(key)]
+                else:
+                    data = "No data"
+                    break
+            # Format
+            new_text = new_text + str(p[0]) + ": " + str(data) + "\n"
+        # And done
+        return self.change_text(new_text)
     def start(self):
         "Activate the window (and keep the thread)"
         self.fen = Tk()
@@ -91,38 +115,31 @@ class ButtonHandler(threading.Thread):
     def stop(self):
         "Stop the handler"
         self.running = False
-        
-            
-        
 
 ###################
 ### DEFINITIONS ###
 ###################
-
 def kill_fen(root):
     "Kill the window that called"
     root.bhandler.stop()
     root.fen.destroy()
     root.fen.quit()
     return lambda a=1:a
-   
-def p(msg):
-    print msg
-    
+
 def nothing():
     "Do nothing"
-    print "No key pressed"
     pass
 
 ##################
 ###  __MAIN__  ###
 ##################
-
 if __name__ == "__main__":
     print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
-    print "> By Viq (under CC BY-SA 3.0 license)"
+    print "> By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
-    a = ControlWindow(nothing)
-    a.add_action("<Up>",lambda b="a":p("Up pressed"))
-    a.add_action("<a>",lambda b="a":p("A pressed"))
-    a.start()
+    gui = ControlWindow(nothing)
+    gui.add_action("<Up>",lambda arg=gui:gui.change_text("Up Arrow pressed"))
+    gui.add_action("<a>",lambda arg=gui:arg.change_text("A button pressed"))
+    gui.bhandler.default_action = lambda arg="a": gui.change_text("No button pressed")
+    gui.change_text("Press a button to start example ...")
+    gui.start()

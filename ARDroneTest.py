@@ -72,50 +72,14 @@ def print_navdata(navdata):
     print navdata
     pass
 
-def update_gui(navdata):
-    "Update the GUI box"
-    global gui
-    if gui == None: return True
-    if navdata["gps_info"] == None:    return True
-    new_text = ""
-    new_text = new_text + "Battery: " + str(navdata["navdata_demo"]["battery_percentage"]) + "%\n"
-    new_text = new_text + "Unsupported options: " + str(navdata["unsupported_option"]) + "\n"
-    
-    # GPS
-    new_text = new_text + "Latitude: " + str(navdata["gps_info"]["latitude"]) + "\n"
-    new_text = new_text + "Longitude: " + str(navdata["gps_info"]["longitude"]) + "\n"
-    new_text = new_text + "Elevation: " + str(navdata["gps_info"]["elevation"]) + "\n"
-    new_text = new_text + "Hdop: " + str(navdata["gps_info"]["hdop"]) + "\n"
-    new_text = new_text + "State: " + str(navdata["gps_info"]["data_available"]) + "\n"
-    # Tags
-##    new_text = new_text + "Number of tags: " + str(navdata["vision_detect"]["nb_detected"]) + "\n"
-##    new_text = new_text + "XC: " + str(navdata["vision_detect"]["xc"]) + "\n"
-##    new_text = new_text + "YC: " + str(navdata["vision_detect"]["yc"]) + "\n"
-##    new_text = new_text + "Width: " + str(navdata["vision_detect"]["width"]) + "\n"
-##    new_text = new_text + "Height: " + str(navdata["vision_detect"]["height"]) + "\n"
-##    new_text = new_text + "Distance " + str(navdata["vision_detect"]["dist"]) + "\n"
-    gui.change_text(new_text)
-    return True
-
 def save_gps_coord(navdata):
     "Save the last navdata coordinate in a global var"
     global last_coord, gui
     # Updata coord
     if navdata["gps_info"] == None:    return False
     last_coord = (navdata["gps_info"]["longitude"],navdata["gps_info"]["latitude"])
-
-    # And GUI
-    if gui == None: return False
-    new_text = ""
-    new_text = new_text + "Battery: " + str(navdata["navdata_demo"]["battery_percentage"]) + "%\n"
-    new_text = new_text + "Unsupported options: " + str(navdata["unsupported_option"]) + "\n"
-    # GPS
-    new_text = new_text + "Latitude: " + str(navdata["gps_info"]["latitude"]) + "\n"
-    new_text = new_text + "Longitude: " + str(navdata["gps_info"]["longitude"]) + "\n"
-    new_text = new_text + "Elevation: " + str(navdata["gps_info"]["elevation"]) + "\n"
-    new_text = new_text + "Hdop: " + str(navdata["gps_info"]["hdop"]) + "\n"
-    new_text = new_text + "State: " + str(navdata["gps_info"]["data_available"]) + "\n"
-    gui.change_text(new_text)    
+    # And refresh GUI
+    gui.callback(navdata)  
     return True
 
 ##################
@@ -190,6 +154,7 @@ def Command_GUI(drone):
     "Create a GUI to command the drone"
     global gui
     gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
+    # Add command
     gui.add_action("<Up>",drone.forward)
     gui.add_action("<Down>",drone.backward)
     gui.add_action("<Left>",drone.left)
@@ -204,7 +169,17 @@ def Command_GUI(drone):
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
     gui.add_action("<o>",lambda arg=drone: ARDroneConfig.activate_drone_detection(drone))
+    # Add info
+    gui.add_printable_data("Battery",("navdata_demo","battery_percentage"))
+    gui.add_printable_data("Number of tags",("vision_detect","nb_detected"))
+    gui.add_printable_data("X position",("vision_detect","xc"))
+    gui.add_printable_data("Y position",("vision_detect","yc"))
+    gui.add_printable_data("Width",("vision_detect","width"))
+    gui.add_printable_data("Height",("vision_detect","height"))
+    gui.add_printable_data("Distance",("vision_detect","distance"))
     gui.change_text("Waiting data ...\nYou can press o to start reception...\nCommands:\nArrows: Navigate\nZ-D: Up-Down\nQ-D: Rotate\nA-Space: TakeOff, Land\nReturn: Emergency\nT,Y,N: Reset, Calibrate, Activate data reception")
+
+    drone.change_callback(gui.callback) # Enable the GUI to receive data from the drone
     gui.start()
 
 # 4st test
@@ -214,6 +189,9 @@ def GPS_Command(drone):
     pos1 = GPS_Coord()
     pos2 = GPS_Coord()
     pos3 = GPS_Coord()
+    drone.change_callback(save_gps_coord) # Change the callback so we can save the GPS data
+    gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
+    # Commands
     gui.add_action("<d>",drone.rotate_right)
     gui.add_action("<a>",drone.takeoff)
     gui.add_action("<space>",drone.land)
@@ -221,7 +199,7 @@ def GPS_Command(drone):
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
     gui.add_action("<o>",lambda arg=drone: ARDroneConfig.activate_drone_detection(drone))
-    # GPS
+    ## GPS
     gui.add_action("<f>",lambda arg=last_coord: pos1.setPoint(last_coord))
     gui.add_action("<g>",lambda arg=last_coord: pos2.setPoint(last_coord))
     gui.add_action("<h>",lambda arg=last_coord: pos3.setPoint(last_coord))
@@ -229,12 +207,17 @@ def GPS_Command(drone):
     gui.add_action("<v>",lambda arg=pos1: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
     gui.add_action("<b>",lambda arg=pos2: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
     gui.add_action("<n>",lambda arg=pos3: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
+
+    # Infos
+    gui.add_printable_data("Battery",("navdata_demo","battery_percentage"))
+    gui.add_printable_data("Latitude",("gps_info","latitude"))
+    gui.add_printable_data("Longitude",("gps_info","longitude"))
+    gui.add_printable_data("Altitude",("gps_info","elevation"))
+    gui.add_printable_data("HDOP",("gps_info","hdop"))
+    gui.add_printable_data("State",("gps_info","data_available"))
     gui.change_text("Press o to start reception...\nF,G,H - Save GPS point\n V,B,N - GOTO GPS Point")
+    # We don't start change the callback because we would lost gps info outside the gui
     gui.start()
-
-
-
-    
 
 ##################
 ###  __MAIN__  ###
@@ -242,19 +225,15 @@ def GPS_Command(drone):
 if __name__ == "__main__":
     global drone
     print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
-    print "> By Viq (under CC BY-SA 3.0 license)"
+    print "> By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     # Create the drone
-    drone = ARDroneLib.Drone(data_callback=update_gui)
-##    try:
-##        drone = ARDroneLib.ARDrone(data_callback=print_it)
-##    except IOError:
-##        wait = raw_input("Cannot connect to drone !")
-##        sys.exit()
-
+    try:
+        drone = ARDroneLib.Drone()
+    except IOError:
+        wait = raw_input("-> Cannot connect to drone !\n-> Press return to quit...")
+        sys.exit()
     # Tests
     choose_sequence(drone)
     drone.stop()
-    
-    
-    print "Done !" 
+    print "Test done." 

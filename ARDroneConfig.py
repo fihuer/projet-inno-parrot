@@ -1,6 +1,6 @@
 # -*- coding:Utf-8 -*-
 # ARDrone Package
-prog_name = "ARDrone Config"
+prog_name = "AR.Drone Config"
 # version:
 version = 1
 # By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde
@@ -61,6 +61,7 @@ def goto_gps_point(drone, longitude, latitude, altitude=3, cap=0):
 
 if __name__ == "__main__":
     print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
-    print "> By Viq (under CC BY-SA 3.0 license)"
+    print "> By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
     print "> This is a library only, please use the test instead"
+

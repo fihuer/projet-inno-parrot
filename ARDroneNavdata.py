@@ -60,21 +60,6 @@ def _drone_status_decode(packet):
     drone_state['com_watchdog']        = packet>>30   & 1
     drone_state['emergency']           = packet>>31   & 1
     return drone_state
-
-def _vision_detect_decode(packet):
-    "Decode the vision detection packet, packet is (id=16, size, data)"
-    if packet[0] != 16:
-        raise IOError("Packet is not vision-detect packet")
-    # Have to check if there isn't tag and size first
-    vision_detect = dict()
-    vision_detect["nb_detected"] = struct.unpack_from("=I",packet[2][0:20])[0]
-    vision_detect["xc"] = struct.unpack_from("=I",packet[2][20:36])[0]
-    vision_detect["yc"] = struct.unpack_from("=I",packet[2][36:52])[0]
-    vision_detect["width"] = struct.unpack_from("=I",packet[2][52:68])[0]
-    vision_detect["height"] = struct.unpack_from("=I",packet[2][68:84])[0]
-    vision_detect["dist"] = struct.unpack_from("=I",packet[2][84:100])[0]
-    #vision_detect["p"] = packet[2]
-    return vision_detect
     
 def _navdata_demo_decode(packet):
     "Decode the navdata_demo which is data about the flight"
@@ -91,6 +76,20 @@ def _navdata_demo_decode(packet):
     navdata_demo["vy"]=int(struct.unpack_from("=f",packet[2],28)[0])
     navdata_demo["vz"]=int(struct.unpack_from("=f",packet[2],32)[0])
     return navdata_demo
+
+def _vision_detect_decode(packet):
+    "Decode the vision detection packet, packet is (id=16, size, data)"
+    if packet[0] != 16:
+        raise IOError("Packet is not vision-detect packet")
+    # Have to check if there isn't tag and size first
+    vision_detect = dict()
+    vision_detect["nb_detected"] = struct.unpack_from("=I",packet[2][0:20])[0]
+    vision_detect["xc"] = struct.unpack_from("=I",packet[2][20:36])[0]
+    vision_detect["yc"] = struct.unpack_from("=I",packet[2][36:52])[0]
+    vision_detect["width"] = struct.unpack_from("=I",packet[2][52:68])[0]
+    vision_detect["height"] = struct.unpack_from("=I",packet[2][68:84])[0]
+    vision_detect["distance"] = struct.unpack_from("=I",packet[2][84:100])[0]
+    return vision_detect
 
 def _gps_decode(packet):
     "Decode data about the GPS"
@@ -170,3 +169,9 @@ def navdata_decode(packet):
 ##################
 ###  __MAIN__  ###
 ##################
+
+if __name__ == "__main__":
+    print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
+    print "> By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde (under CC BY-SA 3.0 license)"
+    print "> Loading program ..."
+    print "> This is a library only, please use the test instead"
