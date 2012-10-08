@@ -3,7 +3,7 @@
 prog_name = "AR.Drone2 Lib"
 # version:
 version = 3
-# By Vianney Tran, Romain Fihue, Giulia Guid, Julien Lagarde
+# By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
 
@@ -35,7 +35,7 @@ class Drone():
         self.ip = ip
         # Check drone availability
         if not _check_telnet(self.ip):
-            raise StandardError, "Cannot connect to AR.Drone2"
+            raise IOError, "Cannot connect to AR.Drone 2"
         # Initialise the communication thread
         self.comThread = _CommandThread(self.ip, self)
         self.comThread.start()

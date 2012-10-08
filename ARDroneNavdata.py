@@ -3,7 +3,7 @@
 prog_name = "AR.Drone NavData"
 # version:
 version = 2
-# By Vianney Tran, Romain Fihue, Giulia Guid, Julien Lagarde
+# By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
 

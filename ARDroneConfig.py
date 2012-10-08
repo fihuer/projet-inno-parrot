@@ -3,7 +3,7 @@
 prog_name = "ARDrone Config"
 # version:
 version = 1
-# By Vianney Tran, Romain Fihue, Giulia Guid, Julien Lagarde
+# By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
 
@@ -37,7 +37,24 @@ def activate_drone_detection(drone, color=0):
     drone.comThread.config("detect:enemy_without_shell","0")
     return True
     
-
+def goto_gps_point(drone, longitude, latitude, altitude=3, cap=0):
+    "Send the drone to the GPS point, cap is in degre"
+    if (longitude is None) or (latitude is None):   return False
+    print "> Sending drone to GPS point ",longitude,latitude,altitude,"..."
+    # Compute each data
+    longi = int(longitude*1000000)
+    lati = int(latitude*1000000)
+    alt = int(altitude*1000)
+    cap = int(cap)
+    # Create the right parameter according to doc
+    param1 = "0,8,"+str(longi)+","+str(lati)+","+str(alt)+",0,0,0," + str(cap) + ",0"
+    # Let's go !
+    drone.comThread.config("control:autonomous_flight","FALSE")
+    drone.comThread.config("control:travelling_mode",param1)
+    drone.comThread.config("control:travelling_enable","TRUE")
+    print "-> Command issued"
+    return True
+    
 ##################
 ###  __MAIN__  ###
 ##################
