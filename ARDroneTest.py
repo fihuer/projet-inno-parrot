@@ -12,6 +12,7 @@ version = 3
 ##############
 import time, sys, os
 import ARDroneLib, ARDroneGUI, ARDroneConfig
+from ARDroneLog import Log
 
 ###############
 ### GLOBALS ###
@@ -75,10 +76,11 @@ def print_navdata(navdata):
 
 def save_gps_coord(navdata):
     "Save the last navdata coordinate in a global var"
-    global last_coord, gui
+    global last_coord, gui, a
     # Updata coord
     if navdata["gps_info"] == None:    return False
     last_coord = (navdata["gps_info"]["longitude"],navdata["gps_info"]["latitude"])
+    a.add_data({"latitude":navdata["gps_info"]["latitude"],"longitude":navdata["gps_info"]["longitude"],"elevation":0})
     # And refresh GUI
     gui.callback(navdata)
     return True
@@ -188,7 +190,8 @@ def command_GUI(drone):
 # 4st test
 def GPS_Command(drone):
     "Create a GUI to command the GPS"
-    global gui, last_coord
+    global gui, last_coord, a
+    a = Log("Drone_GPS.kml","kml")
     pos1 = GPS_Coord()
     pos2 = GPS_Coord()
     pos3 = GPS_Coord()
@@ -223,6 +226,7 @@ def GPS_Command(drone):
     print "Press o to start reception...\nF,G,H - Save GPS point\nV,B,N - GOTO GPS Point"
     # We don't start change the callback because we would lost gps info outside the gui
     gui.start()
+    a.close()
 
 ##################
 ###  __MAIN__  ###
