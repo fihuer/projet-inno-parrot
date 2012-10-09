@@ -99,8 +99,9 @@ def _gps_decode(packet):
     gps_info["latitude"]= struct.unpack_from("=d",packet[2],0)[0]
     gps_info["longitude"]= struct.unpack_from("=d",packet[2],8)[0]
     gps_info["elevation"]= int(struct.unpack_from("=d",packet[2],16)[0]/1000)
-    gps_info["hdop"]= int(struct.unpack_from("=d",packet[2],24)[0]/1000)
+    gps_info["hdop"]= struct.unpack_from("=d",packet[2],24)[0]
     gps_info["data_available"]= struct.unpack_from("=B",packet[2],32)[0]
+    gps_info["zero_validated"],gps_info["wpt_validated"]= struct.unpack_from("=cc",packet[2],33)[0]
     return gps_info
     
     
