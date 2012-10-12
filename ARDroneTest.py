@@ -26,33 +26,6 @@ all_coords = dict()
 ### CLASSES ###
 ###############
 
-class Log():
-    "Log data to file"
-    def __init__(self, filename):
-        "Open the file to log data"
-        self.f = open(filename,"w")
-        self.data = dict()
-    def close(self):
-        "Close the file"
-        # Write data to csv
-        nb_lines = 0
-        for value in self.data.values():
-            if len(value) > nb_lines:   nb_lines = len(value)
-        for i in range(nb_lines):
-            pass # ToDo
-        # Then close
-        self.f.close()
-        return True
-    def __del__(self):
-        "Called when the object is destroyed to close the file"
-        self.close()
-    def log(self, dataname, data):
-        "Log data into file"
-        if not dataname in self.data: # If there is no key dataname in the db, create it
-            self.data = [str(dataname)]
-        self.data[dataname].append(data)
-        return True
-
 class GPS_Coord():
     "Very little class to store GPS Coord"
     def setPoint(self, longi=None, lati=None):
@@ -194,11 +167,16 @@ def GPS_Command(drone):
     a = Log("Drone_GPS.kml","kml")
     pos1 = GPS_Coord()
     pos2 = GPS_Coord()
-    pos3 = GPS_Coord()
+    pos3 = GPS_Coord(2.288652,48.763947) # Stade
     drone.change_callback(save_gps_coord) # Change the callback so we can save the GPS data
     gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
     # Commands
-    gui.add_action("<d>",drone.rotate_right)
+    gui.add_action("<Up>",drone.forward)
+    gui.add_action("<Down>",drone.backward)
+    gui.add_action("<Left>",drone.left)
+    gui.add_action("<Right>",drone.right)
+    gui.add_action("<z>",drone.up)
+    gui.add_action("<s>",drone.down)
     gui.add_action("<a>",drone.takeoff)
     gui.add_action("<space>",drone.land)
     gui.add_action("<Return>",drone.emergency)
@@ -207,6 +185,7 @@ def GPS_Command(drone):
     gui.add_action("<o>",lambda arg=drone: ARDroneConfig.activate_drone_detection(drone))
     print "-> Press o to start gathering data..."
     ## GPS
+    gui.add_action("<e>",lambda arg=drone: drone.unlock_command())
     gui.add_action("<f>",lambda arg=last_coord: pos1.setPoint(last_coord[0],last_coord[1]))
     gui.add_action("<g>",lambda arg=last_coord: pos2.setPoint(last_coord[0],last_coord[1]))
     gui.add_action("<h>",lambda arg=last_coord: pos3.setPoint(last_coord[0],last_coord[1]))

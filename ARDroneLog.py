@@ -29,11 +29,13 @@ class Log():
         self.format = format
         self.filename = filename
         self.f = open(filename,"w")
+        self.open = True
         # Write Header
         if format == "kml": self.f.write('<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>' + str(filename) + '</name>\n')
             
     def add_data(self,data_dict):
         "Add some data to the file, format have to be good"
+        if not self.open:   return False
         if self.format == "kml":
             longi = data_dict["longitude"]
             lati = data_dict["latitude"]
@@ -45,8 +47,8 @@ class Log():
         "Close the file"
         # Write footer
         if self.format == "kml":    self.f.write("</Document>\n</kml>")
+        self.open = False
         self.f.close()
-    __del__ = close
 
 ###################
 ### DEFINITIONS ###
