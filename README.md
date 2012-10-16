@@ -23,7 +23,8 @@ Example:
 <pre>
 import ARDroneLib, ARDroneConfig
 drone = ARDroneLib.Drone(my_callback_function)
-ARDroneConfig.activate_tag_detection(drone)
+drone.start_navdata()
+ARDroneConfig.activate_tag(drone)
 </pre>
 Then the tag detection data will be sent to the callback function
 
@@ -66,6 +67,7 @@ Example:
 <pre>
 import ARDroneLib
 drone = ARDroneLib.Drone(data_callback=my_callback_function)
+drone.start_navdata()
 </pre>
 
 ######################

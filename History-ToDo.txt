@@ -1,54 +1,68 @@
 ToDo:
 - Test last release
+- Add a green icon to gui when we are receiving data
+- Add a file to enable GPS waypoints
 
+##################
+# ARDroneConfig: #
+##################
+r2:
+- Added working config for GPS
+
+r1:
+- Created some initial config for tag
 
 ###############
 # ARDroneLib: #
 ###############
 
+r4:
+- Added support for continuous command
+
 r3:
-- Ajout du support des données de navigation (NavData)
-- Ajout de la commande config
+- Added navigation data support (receive informations from the drone)(NavData)
+- Added config command
 
 r2:
-- Nouvelles commandes:
+- New commands:
 	Reset, Calibrate,
 	Navigate, Forward, Backward, Left, Right,
 	Up, Down, Rotate_left, Rotate_right
 
 
 r1:
-- Creation du thread de gestion des commandes
-- Nouvelles commandes: Take Off, Land, Emergency
-
+- Created thread to handle commands
+- New commands: Take Off, Land, Emergency
 
 ###################
 # ARDroneNavdata: #
 ###################
 
+r3:
+- Added GPS data
+
 r2:
-- Ajout des données de tags
-- Ajout des données de naivgation (navdata_demo)
+- Added tag data
+- Added simple navigation data (navdata_demo)
 
 r1:
-- Ajout de l'état du Drone
+- Added drone status data
 
 
 ################
 # ARDroneTest: #
 ################
+r4:
+- Cleaned the code, should be stable for now
 
 r3:
-- Ajout de l'affichage des données
-
+- Added the possibility to print data
 
 r2:
-- Ajout d'une interface graphique
-- Choix du test au démarrage
-
- 
+- Added GUI
+- You can now choose the test you want to perform
 
 r1:
-- Test de TakeOff, Land
-- Liste des commandes a envoyer
-- Choix de la commande
+- Test of TakeOff, Land
+- List of commands implemented
+- You can choose the command to send

@@ -2,7 +2,7 @@
 # ARDrone Package
 prog_name = "AR.Drone Lib"
 # version:
-version = 3
+version = 4
 # By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde
 # License: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0) 
 # (http://creativecommons.org/licenses/by-sa/3.0/)
@@ -37,8 +37,7 @@ class Drone():
         if not _check_telnet(self.ip):
             raise IOError, "Cannot connect to AR.Drone 2"
         # Initialise the communication thread
-        self.comThread = _CommandThread(self.ip, self)
-        self.com_locked = False
+        self.comThread = _CommandThread(ip)
         self.comThread.start()
         self.c = self.comThread.command # Alias
         # Initialize the navdata thread
@@ -60,21 +59,10 @@ class Drone():
     # Special config
     def configure(self, argument, value):
         "Set a configuration onto the drone"
-        return self.comThread.config(argument,value)
-    def lock_command(self):
-        "Prevent the system to issue commands (for autonomous flight)"
-        if self.com_locked: return False
-        self.com_locked = True
-        self.comThread.command_lock.acquire()
-        return True
-    def unlock_command(self):
-        "Unlock the prevention of sending commands"
-        print "Trying to unlock..."
-        if not self.com_locked: return False
-        print "Unlcoekd !"
-        self.comThread.command_lock.release()
-        self.com_locked = False
-        return True
+        return self.comThread.configure(argument,value)
+    def continuous_config(self, argument,value):
+        "Set a configuration onto the drone which will be sent frenquently"
+        return self.comThread.continuous_config(argument,value)
         
     # Issuable command
     ## Take Off/Land/Emergency
@@ -83,14 +71,10 @@ class Drone():
         return self.c("AT*REF=#ID#," + str(bin2dec("00010001010101000000001000000000")) + "\r")
     def land(self):
         "Land"
-        if self.comThread.command_lock.locked():    self.comThread.command_lock.release()
-        if self.comThread.socket_lock.locked():    self.comThread.socket_lock.release()
         return self.c("AT*REF=#ID#," + str(bin2dec("00010001010101000000000000000000")) + "\r")
     def emergency(self):
         "Enter in emergency mode"
         # Release all lock to be sure command is issued
-        if self.comThread.command_lock.locked():    self.comThread.command_lock.release()
-        if self.comThread.socket_lock.locked():    self.comThread.socket_lock.release()
         return self.c("AT*REF=#ID#," + str(bin2dec("00010001010101000000000100000000")) + "\r")
     def reset(self):
         "Reset the state of the drone"
@@ -100,7 +84,10 @@ class Drone():
         # Then normal state
         return self.land()
     
-    ## Calibrate sensors
+    ## Calibrate
+    def start_navdata(self):
+        "Start reception of navdata"
+        return self.configure("general:navdata_demo","FALSE")
     def calibrate(self):
         "Calibrate sensors"
         return self.c("AT*FTRIM=#ID#\r")
@@ -145,17 +132,16 @@ class Drone():
 
 class _CommandThread(threading.Thread):
     "Classe qui gere les commandes Parrot car on doit en envoyer souvent"
-    def __init__(self, ip, drone):
+    def __init__(self, ip = "192.168.1.1", port = COMMAND_PORT):
         "Create the Command Thread"
         self.running = True
         self.ip = ip
-        self.port = COMMAND_PORT
-        self.drone = drone
-        
+        self.port = port        
         self.counter = 10 # Counter to issue AT command in order
-        self.com = None # Command issued
+        self.continous_config = None # If not set to None, will issue this command each time instead of command
+        self.com = None # Last command to issue
         self.socket_lock = threading.Lock() # Create the lock for the socket
-        self.command_lock = threading.Lock() # Create the lock to stop sending command when in autonomous flight
+        self.__ack = False
         # Create the UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.connect((self.ip, self.port))
@@ -167,19 +153,72 @@ class _CommandThread(threading.Thread):
         self.is_configurated = False
         threading.Thread.__init__(self)
         
+    # Usable commands
+    def command(self,command):
+        "Send a command to the AR.Drone"
+        self.continous_config = None
+        self.com = command
+        return True
+    def continuous_config(self, argument,value):
+        "Set a configuration onto the drone which will be sent frenquently"
+        self.com = None
+        self.continous_config = (argument,value)
+        return True
+
+    def configure(self, argument, value):
+        "Set a configuration onto the drone"
+        # Check if it's the first time we send a config
+        if not self.is_configurated:
+            # Activate the config
+            self.is_configurated = True
+            self.configure("custom:session_id",self.session_id)
+            self.configure("custom:profile_id",self.profile_id)
+            self.configure("custom:application_id",self.app_id)
+        self.socket_lock.acquire()
+        tries = 0
+        while tries <= 3:
+            to_send = "AT*CONFIG_IDS="+str(self.counter) + ',"' + self.session_id + '","' + self.profile_id + '","' + self.app_id + '"\r'
+            self.sock.send(to_send)
+            time.sleep(0.05)
+            to_send = "AT*CONFIG="+str(self.counter+1)+',"' + str(argument) + '","' + str(value) + '"\r'
+            #print to_send # Printing the AT*CONFIG we are sending
+            self.sock.send(to_send)
+            self.counter = self.counter + 2
+            # Check if we receive acknowledgement
+            time.sleep(0.05)
+            if self.__ack:
+                self.__ack = False
+                break
+            tries += 1
+        self.sock.send("AT*CTRL="+str(self.counter)+",5,0")
+        self.counter = self.counter + 1
+        self.socket_lock.release()
+        if tries < 4:
+            return True
+        else:
+            return False
+    # Internal functions
+    def _ack_command(self):
+        "Call this function when the command is acknoledge"
+        self.__ack = True
+        return True
+    
     def run(self):
         "Send commands every 30ms"
         while self.running:
             com = self.com
-            self.command_lock.acquire()
+            conf = self.continous_config
             self.socket_lock.acquire() # Ask for the permission to send msg
             self.sock.send("AT*COMWDG\r")
             if com != None:
                 com = com.replace("#ID#",str(self.counter))
                 self.sock.send(com)
                 self.counter += 1
-            if self.socket_lock.locked():     self.socket_lock.release()
-            if self.command_lock.locked():    self.command_lock.release() # Release the socket
+            if conf != None:
+                self.socket_lock.release()
+                self.configure(conf[0],conf[1])
+                self.socket_lock.acquire()
+            self.socket_lock.release()
             time.sleep(0.03)
         self.sock.close()
     
@@ -188,44 +227,6 @@ class _CommandThread(threading.Thread):
         self.running = False
         time.sleep(0.05)
         return True
-    
-    def command(self,command):
-        "Send a command to the AR.Drone"
-        self.com = command
-        return True
-
-    def config(self, argument, value):
-        "Set a configuration onto the drone"
-        # Check if it's the first time we send a config
-        if not self.is_configurated:
-            # Activate the config
-            self.is_configurated = True
-            self.config("custom:session_id",self.session_id)
-            self.config("custom:profile_id",self.profile_id)
-            self.config("custom:application_id",self.app_id)
-        self.socket_lock.acquire()
-        tries = 0
-        while tries <= 3:
-            to_send = "AT*CONFIG_IDS="+str(self.counter) + ',"' + self.session_id + '","' + self.profile_id + '","' + self.app_id + '"\r'
-            self.sock.send(to_send)
-            time.sleep(0.05)
-            to_send = "AT*CONFIG="+str(self.counter+1)+',"' + str(argument) + '","' + str(value) + '"\r'
-            print "\n"+to_send
-            self.sock.send(to_send)
-            self.counter = self.counter + 2
-            # Check if we receive acknowledgement
-            time.sleep(0.1)
-            if self.drone.navThread.last_drone_status["command_ack"] == 1:
-                break
-            tries += 1
-        self.sock.send("AT*CTRL="+str(self.counter)+",5,0")
-        self.counter = self.counter + 1
-        if self.socket_lock.locked(): self.socket_lock.release()
-        
-        if tries < 4:
-            return True
-        else:
-            return False
 
 class _NavdataThread(threading.Thread):
     "Manage the incoming data"
@@ -266,7 +267,9 @@ class _NavdataThread(threading.Thread):
                 time.sleep(0.05)
             else:
                 rep = self.f(rep)
-                self.last_drone_status = rep["drone_state"]
+                self.last_navdata = rep
+                if rep["drone_state"]['command_ack'] == 1:
+                    self.com._ack_command()
                 self.callback(rep)
         self.sock.close()
         
