@@ -163,6 +163,7 @@ class _CommandThread(threading.Thread):
         "Set a configuration onto the drone which will be sent frenquently"
         self.com = None
         self.continous_config = (argument,value)
+        self.configure(argument,value)
         return True
 
     def configure(self, argument, value):
@@ -214,10 +215,6 @@ class _CommandThread(threading.Thread):
                 com = com.replace("#ID#",str(self.counter))
                 self.sock.send(com)
                 self.counter += 1
-            if conf != None:
-                self.socket_lock.release()
-                self.configure(conf[0],conf[1])
-                self.socket_lock.acquire()
             self.socket_lock.release()
             time.sleep(0.03)
         self.sock.close()
@@ -257,9 +254,6 @@ class _NavdataThread(threading.Thread):
         # Initialize the drone to send the data
         self.sock.sendto("\x01\x00\x00\x00", (self.ip,self.port))
         time.sleep(0.05)
-        #self.com.sock.send("""AT*CONFIG=1,"general:navdata_demo","TRUE"\r""")
-        #time.sleep(0.05)
-        #self.com.sock.send("AT*CTRL=2,0\r")
         while self.running:
             try:
                 rep, client = self.sock.recvfrom(self.size)

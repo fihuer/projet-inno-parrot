@@ -81,6 +81,8 @@ def choose_sequence(drone):
     elif result == "4":
         print "-> Starting GPS Test ..."
         GPS_Command(drone)
+    elif result == "5":
+        GPS_Route(drone)
 
 # 1st Test: Just testing commands
 def takeoff_land(drone):
@@ -120,11 +122,14 @@ def menu_list(drone):
         if result == "7": drone.right()
         if result == "8": drone.calibrate()
         if result == "a": drone.reset()
+        if result == "f": ARDroneConfig.activate_AP_mode(drone)
 
 # 3nd test
 def command_GUI(drone):
     "Create a GUI to command the drone"
     global gui
+    ARDroneConfig.outdoor(drone)
+    ARDroneConfig.nervosity_level(drone,100)
     gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
     # Add command
     gui.add_action("<Up>",drone.forward)
@@ -141,6 +146,7 @@ def command_GUI(drone):
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
     gui.add_action("<o>",lambda arg=drone: ARDroneConfig.activate_tag(drone))
+    gui.add_action("<e>",lambda arg=drone:ARDroneConfig.flip(drone))
     print "-> Press o to start tag detection..."
     # Add info
     gui.add_printable_data("Battery",("navdata_demo","battery_percentage"))
@@ -161,7 +167,7 @@ def GPS_Command(drone):
     a = Log("Drone_GPS.kml","kml")
     pos1 = GPS_Coord()
     pos2 = GPS_Coord()
-    pos3 = GPS_Coord(2.288652,48.763947) # Stade
+    pos3 = GPS_Coord(48.763947,2.288652) # Stade
     drone.change_callback(save_gps_coord) # Change the callback so we can save the GPS data
     gui = ARDroneGUI.ControlWindow(default_action=drone.hover)
     # Commands
@@ -177,9 +183,9 @@ def GPS_Command(drone):
     gui.add_action("<t>",drone.reset)
     gui.add_action("<y>",drone.calibrate)
     ## GPS
-    gui.add_action("<f>",lambda arg=last_coord: pos1.setPoint(last_coord[0],last_coord[1]))
-    gui.add_action("<g>",lambda arg=last_coord: pos2.setPoint(last_coord[0],last_coord[1]))
-    gui.add_action("<h>",lambda arg=last_coord: pos3.setPoint(last_coord[0],last_coord[1]))
+    gui.add_action("<f>",lambda arg=last_coord: pos1.setPoint(last_coord[1],last_coord[0]))
+    gui.add_action("<g>",lambda arg=last_coord: pos2.setPoint(last_coord[1],last_coord[0]))
+    gui.add_action("<h>",lambda arg=last_coord: pos3.setPoint(last_coord[1],last_coord[0]))
     gui.add_action("<v>",lambda arg=pos1: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
     gui.add_action("<b>",lambda arg=pos2: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
     gui.add_action("<n>",lambda arg=pos3: ARDroneConfig.goto_gps_point(drone,arg.getPoint()[0],arg.getPoint()[1]))
@@ -195,7 +201,20 @@ def GPS_Command(drone):
     # We don't start change the callback because we would lost gps info outside the gui
     drone.start_navdata()
     gui.start()
-    a.close()        
+    a.close()
+def GPS_Route(drone):
+    "Do a route in GPS"
+    route = (48.764237,2.288996),(48.763916,2.288991),(48.763947,2.288511),(48.764211,2.288519),(48.764237,2.288996)
+    ARDroneConfig.outdoor(drone)
+    ARDroneConfig.nervosity_level(drone,100)
+    wait = raw_input("Press enter to take off...")
+    drone.takeoff()
+    for i in range(len(route)):
+        wait = raw_input("Press enter to go to point " + str(i+1) + "...")
+        ARDroneConfig.goto_gps_point(drone,route[i][0],route[i][1])
+    wait = raw_input("Press enter to land...")
+    drone.land()
+    print "Done !"
 
 ##################
 ###  __MAIN__  ###
