@@ -70,6 +70,7 @@ def choose_sequence(drone):
     print "2 - Command line test"
     print "3 - GUI Command Test"
     print "4 - GPS Test"
+    print "5 - GPS Route"
     result = raw_input(">")
     if result == "1":
         takeoff_land(drone)
@@ -204,14 +205,20 @@ def GPS_Command(drone):
     a.close()
 def GPS_Route(drone):
     "Do a route in GPS"
-    route = (48.764237,2.288996),(48.763916,2.288991),(48.763947,2.288511),(48.764211,2.288519),(48.764237,2.288996)
+    route = (48.764304,2.289237),(48.764374,2.289180),(48.764448,2.289080),(48.764502,2.288952),(48.764529,2.288794),(48.764532,2.288639),(48.764521,2.288507),(48.764489,2.288392),(48.764435,2.288288),(48.764368,2.288213),(48.764300,2.288173),(48.764325,2.288438),(48.764360,2.288691),(48.764324,2.288999) #That's a big one : petit parcours decoupé en tranche de 10m environ
     ARDroneConfig.outdoor(drone)
     ARDroneConfig.nervosity_level(drone,100)
     wait = raw_input("Press enter to take off...")
     drone.takeoff()
+    delay=15 #Variable à régler pour correspondre au temps de parcours entre chaque point
     for i in range(len(route)):
-        wait = raw_input("Press enter to go to point " + str(i+1) + "...")
+        #wait = raw_input("Press enter to go to point " + str(i+1) + "...")
+        while (delay>0):
+            time.sleep(1)
+            delay= delay-1
+            print "Going to point "+ str(i+1) + " in " + str(delay) + " secs !"
         ARDroneConfig.goto_gps_point(drone,route[i][0],route[i][1])
+        
     wait = raw_input("Press enter to land...")
     drone.land()
     print "Done !"
