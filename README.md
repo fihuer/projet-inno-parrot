@@ -1,3 +1,6 @@
+Newest version is available here: https://github.com/Viq111/ARDroneLib
+==================
+
 Python ARDrone Libray for AR.Drone 2.0 to 2.3
 ==================
 
